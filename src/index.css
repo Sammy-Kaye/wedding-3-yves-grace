@@ -1,0 +1,212 @@
+/* ============================================================
+   WEDDING 3 — Yves Nkolo & Grace Ntumba
+   Global Styles, CSS Variables, Typography
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600&display=swap');
+
+/* --- Variables --- */
+:root {
+  --cream:        #FAF7F2;
+  --ivory:        #F2EDE4;
+  --blush:        #E8C9C9;
+  --blush-deep:   #C9A0A0;
+  --blush-dark:   #A87070;
+  --sage:         #B5C4B1;
+  --sage-deep:    #7A9A74;
+  --brown:        #6B4C3B;
+  --charcoal:     #3D3531;
+  --text:         #4A4240;
+  --text-light:   #8A7F7D;
+  --white:        #FFFFFF;
+
+  --font-heading: 'Cormorant Garamond', Georgia, serif;
+  --font-body:    'Montserrat', sans-serif;
+
+  --max-width:    1100px;
+  --section-pad:  80px 20px;
+  --radius:       8px;
+  --shadow:       0 4px 20px rgba(0, 0, 0, 0.08);
+  --transition:   all 0.3s ease;
+}
+
+/* --- Reset --- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--cream);
+  color: var(--text);
+  line-height: 1.7;
+  font-size: 15px;
+}
+
+/* --- Typography --- */
+h1, h2, h3, h4 {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  color: var(--charcoal);
+  line-height: 1.2;
+}
+
+h1 { font-size: clamp(2.5rem, 6vw, 4.5rem); }
+h2 { font-size: clamp(1.8rem, 4vw, 2.8rem); }
+h3 { font-size: clamp(1.2rem, 2.5vw, 1.6rem); }
+
+p { color: var(--text); }
+
+a {
+  color: var(--blush-dark);
+  text-decoration: none;
+  transition: var(--transition);
+}
+a:hover { color: var(--sage-deep); }
+
+/* --- Layout --- */
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.section {
+  padding: var(--section-pad);
+}
+
+.section-alt {
+  background-color: var(--ivory);
+}
+
+.section-title {
+  text-align: center;
+  margin-bottom: 48px;
+  position: relative;
+}
+
+.section-title::after {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 1px;
+  background: var(--blush-deep);
+  margin: 16px auto 0;
+}
+
+/* --- Buttons --- */
+.btn {
+  display: inline-block;
+  padding: 13px 32px;
+  border-radius: var(--radius);
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: var(--transition);
+  border: none;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background-color: var(--blush-deep);
+  color: var(--white);
+}
+.btn-primary:hover {
+  background-color: var(--blush-dark);
+  color: var(--white);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(168, 112, 112, 0.3);
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--blush-deep);
+  color: var(--blush-deep);
+}
+.btn-outline:hover {
+  background: var(--blush-deep);
+  color: var(--white);
+  transform: translateY(-2px);
+}
+
+.btn-sage {
+  background-color: var(--sage-deep);
+  color: var(--white);
+}
+.btn-sage:hover {
+  background-color: #618a5b;
+  color: var(--white);
+  transform: translateY(-2px);
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: var(--white);
+}
+.btn-danger:hover {
+  background-color: #b02a37;
+  transform: translateY(-2px);
+}
+
+.btn-sm {
+  padding: 8px 16px;
+  font-size: 0.7rem;
+}
+
+/* --- Cards --- */
+.card {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 32px;
+}
+
+/* --- Hidden utility --- */
+.hidden { display: none !important; }
+
+/* --- Notification container --- */
+#notification-root {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 380px;
+  pointer-events: none;
+}
+
+/* --- Page fade in --- */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(100%); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideOutRight {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(100%); }
+}
+
+.fade-in { animation: fadeIn 0.6s ease forwards; }
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+  :root {
+    --section-pad: 56px 16px;
+  }
+}
