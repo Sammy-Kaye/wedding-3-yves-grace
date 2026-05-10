@@ -36,23 +36,25 @@
   color: var(--text-light);
 }
 
-.gifts__bank-note-wrap {
+.gifts__body {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
 }
 
-.gifts__bank-note--fr {
+.gifts__body--fr {
   font-family: var(--font-heading);
   font-style: italic;
-  font-size: 0.95rem;
-  color: var(--text);
+  font-size: 1rem;
+  color: var(--charcoal);
+  line-height: 1.75;
 }
 
-.gifts__bank-note--en {
+.gifts__body--en {
   font-family: var(--font-body);
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   color: var(--text-light);
+  line-height: 1.75;
 }
 
 /* Banking details table */

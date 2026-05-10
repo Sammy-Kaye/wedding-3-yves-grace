@@ -110,13 +110,14 @@ export default function RSVP() {
     }
   };
 
-  // ── No Firebase: coming soon placeholder ──────────────────────────────────
+  // ── No Firebase: mock preview (shows real UI with a demo guest) ───────────
   if (!isFirebaseConfigured) {
     return (
       <section id="rsvp" className="rsvp section">
         <div className="container">
           <BilSectionTitle fr="Confirmation de Présence" en="RSVP" />
           <div className="rsvp__wrap">
+            {/* Instructions — identical to live */}
             <div className="rsvp__instructions">
               <div className="rsvp__instructions-title">
                 <p className="rsvp__instructions-title--fr">Comment confirmer votre présence</p>
@@ -142,16 +143,53 @@ export default function RSVP() {
                 <span className="rsvp__deadline-date--en">{RSVP_DEADLINE_EN}</span>
               </div>
             </div>
+
+            {/* Mock form — pre-filled with demo guest */}
             <div className="rsvp__form card">
-              <div className="rsvp__coming-soon">
-                <div style={{ fontSize: '2rem' }}>💌</div>
-                <div className="rsvp__coming-soon-text">
-                  <p className="cs-fr">Confirmation bientôt disponible</p>
-                  <p className="cs-en">RSVP Opening Soon</p>
+              <div className="rsvp__form-title">
+                <p className="rsvp__form-title--fr">Trouvez votre invitation</p>
+                <p className="rsvp__form-title--en">Find Your Invitation</p>
+              </div>
+              <div className="rsvp__sub-wrap">
+                <p className="rsvp__sub rsvp__sub--fr">Entrez votre nom tel qu'il figure sur votre invitation.</p>
+                <p className="rsvp__sub rsvp__sub--en">Enter your name exactly as it appears on your invitation.</p>
+              </div>
+
+              <div className="rsvp__search-wrap">
+                <input
+                  className="rsvp__input"
+                  type="text"
+                  placeholder="Rechercher votre nom… / Search your name…"
+                  defaultValue="Jean Dupont"
+                  readOnly
+                />
+              </div>
+
+              {/* Static mock guest confirmation panel */}
+              <div className="rsvp__guest-confirm">
+                <div className="rsvp__greeting-wrap">
+                  <p className="rsvp__greeting rsvp__greeting--fr">
+                    Bonjour, <strong>Jean Dupont</strong> !
+                  </p>
+                  <p className="rsvp__greeting rsvp__greeting--en">
+                    Hello, <strong>Jean Dupont</strong>!
+                  </p>
                 </div>
-                <div className="rsvp__coming-soon-sub">
-                  <p className="cs-fr">Le système de confirmation sera disponible prochainement. Veuillez revenir avant le {RSVP_DEADLINE_FR}.</p>
-                  <p className="cs-en">The RSVP system will be live shortly. Please check back before {RSVP_DEADLINE_EN}.</p>
+                <div className="rsvp__question-wrap">
+                  <p className="rsvp__question rsvp__question--fr">
+                    Serez-vous présent(e) le 03 octobre 2026 ?
+                  </p>
+                  <p className="rsvp__question rsvp__question--en">
+                    Will you be joining us on 03 October 2026?
+                  </p>
+                </div>
+                <div className="rsvp__options">
+                  <button className="btn btn-primary rsvp__option">
+                    ✓ Je serai présent(e) ! / I'll be there!
+                  </button>
+                  <button className="btn btn-outline rsvp__option">
+                    ✕ Je décline avec regret / Regretfully decline
+                  </button>
                 </div>
               </div>
             </div>
