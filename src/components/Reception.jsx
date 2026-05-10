@@ -1,3 +1,4 @@
+import { BilSectionTitle, BilPara } from './BilingualText.jsx';
 import './Venues.css';
 
 const RECEPTION_MAP_SRC =
@@ -9,13 +10,13 @@ export default function Reception() {
   return (
     <section id="reception" className="venue section section-alt">
       <div className="container">
-        <h2 className="section-title">Reception</h2>
+        <BilSectionTitle fr="Réception" en="Reception" />
 
         <div className="venue__layout venue__layout--reversed">
           {/* Map */}
           <div className="venue__map-wrap">
             <iframe
-              title="Reception venue map"
+              title="Lieu de la réception / Reception venue map"
               src={RECEPTION_MAP_SRC}
               width="100%"
               height="100%"
@@ -33,37 +34,37 @@ export default function Reception() {
 
             <ul className="venue__info-list">
               <li>
-                <span className="venue__info-label">Address</span>
+                <span className="venue__info-label">Adresse / Address</span>
                 <span>Rhodes Drive, Newlands, Cape Town, 7735</span>
               </li>
               <li>
                 <span className="venue__info-label">Date</span>
-                <span>Saturday, 03 October 2026</span>
+                <span>Samedi / Saturday, 03 Octobre / October 2026</span>
               </li>
               <li>
-                <span className="venue__info-label">Arrival</span>
-                <span>15:30 (3:30 PM)</span>
+                <span className="venue__info-label">Arrivée / Arrival</span>
+                <span>15h30 (3:30 PM)</span>
               </li>
               <li>
-                <span className="venue__info-label">End time</span>
-                <span>No later than 19:30 (7:30 PM)</span>
+                <span className="venue__info-label">Fin / End time</span>
+                <span>Au plus tard 19h30 / No later than 7:30 PM</span>
               </li>
             </ul>
 
             <div className="venue__notice">
               <span className="venue__notice-icon">🕞</span>
-              <p>
-                Please arrive on time. The reception begins at{' '}
-                <strong>15:30</strong>.
-              </p>
+              <BilPara
+                fr="Veuillez arriver à l'heure. La réception commence à 15h30."
+                en="Please arrive on time. The reception begins at 3:30 PM."
+              />
             </div>
 
             <div className="venue__notice venue__notice--soft">
               <span className="venue__notice-icon">🚫</span>
-              <p>
-                Kindly note that this is an <strong>adults-only</strong>{' '}
-                reception. We appreciate your understanding.
-              </p>
+              <BilPara
+                fr="Veuillez noter que cette réception est réservée aux adultes. Nous vous remercions de votre compréhension."
+                en="Kindly note that this is an adults-only reception. We appreciate your understanding."
+              />
             </div>
 
             <a
@@ -72,7 +73,7 @@ export default function Reception() {
               rel="noopener noreferrer"
               className="btn btn-outline venue__directions-btn"
             >
-              📍 Get Directions
+              📍 Obtenir l'itinéraire / Get Directions
             </a>
           </div>
         </div>

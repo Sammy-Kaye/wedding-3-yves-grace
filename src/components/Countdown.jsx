@@ -1,7 +1,15 @@
 import { useEffect, useState } from 'react';
+import { BilSectionTitle } from './BilingualText.jsx';
 import './Countdown.css';
 
 const WEDDING_DATE = new Date('2026-10-03T10:00:00+02:00'); // SAST
+
+const UNITS = [
+  { fr: 'Jours',    en: 'Days',    key: 'days' },
+  { fr: 'Heures',   en: 'Hours',   key: 'hours' },
+  { fr: 'Minutes',  en: 'Minutes', key: 'minutes' },
+  { fr: 'Secondes', en: 'Seconds', key: 'seconds' },
+];
 
 function getTimeLeft() {
   const diff = WEDDING_DATE - Date.now();
@@ -25,27 +33,28 @@ export default function Countdown() {
   return (
     <section className="countdown section section-alt" id="countdown">
       <div className="container">
-        <h2 className="section-title">Counting Down</h2>
+        <BilSectionTitle fr="Compte à Rebours" en="Counting Down" />
         {timeLeft ? (
           <div className="countdown__grid">
-            {[
-              { label: 'Days',    value: timeLeft.days },
-              { label: 'Hours',   value: timeLeft.hours },
-              { label: 'Minutes', value: timeLeft.minutes },
-              { label: 'Seconds', value: timeLeft.seconds },
-            ].map(({ label, value }) => (
-              <div className="countdown__unit" key={label}>
+            {UNITS.map(({ fr, en, key }) => (
+              <div className="countdown__unit" key={key}>
                 <span className="countdown__number">
-                  {String(value).padStart(2, '0')}
+                  {String(timeLeft[key]).padStart(2, '0')}
                 </span>
-                <span className="countdown__label">{label}</span>
+                <span className="countdown__label countdown__label--fr">{fr}</span>
+                <span className="countdown__label countdown__label--en">{en}</span>
               </div>
             ))}
           </div>
         ) : (
-          <p className="countdown__done">
-            The wedding day has arrived — celebrate!
-          </p>
+          <div className="countdown__done-wrap">
+            <p className="countdown__done countdown__done--fr">
+              Le grand jour est arrivé — célébrons !
+            </p>
+            <p className="countdown__done countdown__done--en">
+              The wedding day is here — celebrate!
+            </p>
+          </div>
         )}
       </div>
     </section>

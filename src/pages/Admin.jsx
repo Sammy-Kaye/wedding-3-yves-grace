@@ -7,7 +7,7 @@ import {
 import {
   signInWithEmailAndPassword, signOut, onAuthStateChanged,
 } from 'firebase/auth';
-import { db, auth } from '../firebase/config.js';
+import { db, auth, isFirebaseConfigured } from '../firebase/config.js';
 import { showNotification } from '../components/Notification.jsx';
 import NotificationRoot from '../components/Notification.jsx';
 import './Admin.css';
@@ -316,6 +316,28 @@ export default function Admin() {
   };
 
   // ── Render ──────────────────────────────────────────────────────────────────
+
+  if (!isFirebaseConfigured) {
+    return (
+      <>
+        <NotificationRoot />
+        <div className="admin-login-page">
+          <div className="admin-login-card">
+            <Link to="/" className="admin-login-back">← Back to wedding site</Link>
+            <h1>Admin Panel</h1>
+            <p>Yves &amp; Grace — Wedding Dashboard</p>
+            <div style={{ marginTop: 24, padding: '20px', background: 'var(--ivory)', borderRadius: 'var(--radius)', borderLeft: '3px solid var(--blush-deep)' }}>
+              <p style={{ fontSize: '0.88rem', color: 'var(--text)', lineHeight: 1.8 }}>
+                <strong>Firebase not configured.</strong><br />
+                Copy <code>.env.example</code> to <code>.env</code> and add your
+                Firebase project credentials to enable the admin dashboard and RSVP system.
+              </p>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   if (authLoading) {
     return (

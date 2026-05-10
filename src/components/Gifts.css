@@ -15,19 +15,43 @@
   font-size: 2rem;
 }
 
-.gifts__card h3 {
+.gifts__card-title {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.gifts__title--fr {
+  font-family: var(--font-heading);
   font-style: italic;
+  font-size: 1.2rem;
   color: var(--brown);
 }
 
-.gifts__card p {
-  font-size: 0.88rem;
+.gifts__title--en {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
   color: var(--text-light);
-  line-height: 1.8;
 }
 
-.gifts__bank-note {
-  font-size: 0.85rem;
+.gifts__bank-note-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.gifts__bank-note--fr {
+  font-family: var(--font-heading);
+  font-style: italic;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.gifts__bank-note--en {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
   color: var(--text-light);
 }
 

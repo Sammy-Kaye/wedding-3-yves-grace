@@ -1,3 +1,4 @@
+import { BilSectionTitle, BilPara } from './BilingualText.jsx';
 import './Venues.css';
 
 const CHURCH_MAP_SRC =
@@ -9,7 +10,7 @@ export default function Ceremony() {
   return (
     <section id="ceremony" className="venue section">
       <div className="container">
-        <h2 className="section-title">Church Consecration</h2>
+        <BilSectionTitle fr="Cérémonie Religieuse" en="Church Consecration" />
 
         <div className="venue__layout">
           {/* Details */}
@@ -19,25 +20,25 @@ export default function Ceremony() {
 
             <ul className="venue__info-list">
               <li>
-                <span className="venue__info-label">Address</span>
+                <span className="venue__info-label">Adresse / Address</span>
                 <span>39 Die Villiers Street, Parow Valley, Cape Town</span>
               </li>
               <li>
                 <span className="venue__info-label">Date</span>
-                <span>Saturday, 03 October 2026</span>
+                <span>Samedi / Saturday, 03 Octobre / October 2026</span>
               </li>
               <li>
-                <span className="venue__info-label">Time</span>
-                <span>10:00 AM</span>
+                <span className="venue__info-label">Heure / Time</span>
+                <span>10h00 / 10:00 AM</span>
               </li>
             </ul>
 
             <div className="venue__notice">
               <span className="venue__notice-icon">🕙</span>
-              <p>
-                Please arrive promptly. The service will begin at{' '}
-                <strong>10:00 AM</strong>.
-              </p>
+              <BilPara
+                fr="Veuillez arriver à l'heure. La cérémonie débutera à 10h00."
+                en="Please arrive promptly. The service will begin at 10:00 AM."
+              />
             </div>
 
             <a
@@ -46,14 +47,14 @@ export default function Ceremony() {
               rel="noopener noreferrer"
               className="btn btn-outline venue__directions-btn"
             >
-              📍 Get Directions
+              📍 Obtenir l'itinéraire / Get Directions
             </a>
           </div>
 
           {/* Map */}
           <div className="venue__map-wrap">
             <iframe
-              title="Church venue map"
+              title="Lieu de la cérémonie / Church venue map"
               src={CHURCH_MAP_SRC}
               width="100%"
               height="100%"

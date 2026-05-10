@@ -17,16 +17,42 @@
   margin-bottom: 4px;
 }
 
-.dresscode__message {
+.dresscode__message-wrap,
+.dresscode__detail-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+}
+
+.dresscode__message--fr {
   font-family: var(--font-heading);
   font-style: italic;
   font-size: clamp(1.2rem, 3vw, 1.7rem);
   color: var(--charcoal);
   line-height: 1.5;
+  text-align: center;
 }
 
-.dresscode__detail {
-  font-size: 0.88rem;
+.dresscode__message--en {
+  font-family: var(--font-body);
+  font-size: 0.84rem;
+  color: var(--text-light);
+  text-align: center;
+}
+
+.dresscode__detail--fr {
+  font-family: var(--font-heading);
+  font-style: italic;
+  font-size: 1rem;
+  color: var(--text);
+  text-align: center;
+}
+
+.dresscode__detail--en {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
   color: var(--text-light);
   letter-spacing: 0.5px;
+  text-align: center;
 }

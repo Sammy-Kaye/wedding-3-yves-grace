@@ -18,11 +18,28 @@
   opacity: 0.7;
 }
 
+.invitee__dear-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: center;
+}
+
 .invitee__dear {
   font-family: var(--font-heading);
   font-style: italic;
-  font-size: 1.2rem;
+}
+
+.invitee__dear--fr {
+  font-size: 1.3rem;
+  color: var(--charcoal);
+}
+
+.invitee__dear--en {
+  font-size: 0.9rem;
   color: var(--text-light);
+  font-family: var(--font-body);
+  font-style: normal;
 }
 
 .invitee__name {
@@ -32,10 +49,28 @@
   line-height: 1.1;
 }
 
-.invitee__message {
-  font-size: 0.9rem;
-  line-height: 1.9;
-  color: var(--text-light);
+.invitee__message-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   max-width: 560px;
   margin-top: 4px;
+}
+
+.invitee__message {
+  line-height: 1.9;
+  text-align: center;
+}
+
+.invitee__message--fr {
+  font-family: var(--font-heading);
+  font-style: italic;
+  font-size: 1.05rem;
+  color: var(--charcoal);
+}
+
+.invitee__message--en {
+  font-family: var(--font-body);
+  font-size: 0.83rem;
+  color: var(--text-light);
 }

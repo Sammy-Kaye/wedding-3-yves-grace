@@ -1,0 +1,106 @@
+/* ============================================================
+   Bilingual Text — French First, Same Priority
+   FR: Cormorant Garamond (elegant serif — the site's primary font)
+   EN: Montserrat (clean sans-serif — the site's secondary font)
+   Both always visible. French on top. Equal weight, distinct style.
+   ============================================================ */
+
+/* ── Shared base ── */
+.bil-fr {
+  font-family: var(--font-heading);
+  color: var(--charcoal);
+}
+
+.bil-en {
+  font-family: var(--font-body);
+  color: var(--text);
+}
+
+/* ── Headings ── */
+.bil-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* French heading: large italic serif */
+.bil-heading .bil-fr {
+  font-style: italic;
+  /* size inherits from h2/h3 parent */
+}
+
+/* English heading: small-caps label feel, same hierarchy but clearly Montserrat */
+.bil-en--heading {
+  display: block;
+  font-size: 0.58em;
+  font-weight: 500;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--text-light);
+  font-family: var(--font-body);
+}
+
+/* Section title wrapper — reproduces the ::after line from index.css */
+.bil-section-title {
+  text-align: center;
+  margin-bottom: 48px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.bil-section-title::after {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 1px;
+  background: var(--blush-deep);
+  margin: 16px auto 0;
+}
+
+/* ── Paragraphs ── */
+.bil-para {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* French paragraph: Cormorant Garamond, slightly larger, italic */
+.bil-fr--para {
+  font-family: var(--font-heading);
+  font-style: italic;
+  font-size: 1.05rem;
+  color: var(--charcoal);
+  line-height: 1.75;
+}
+
+/* English paragraph: Montserrat, slightly smaller, standard weight */
+.bil-en--para {
+  font-family: var(--font-body);
+  font-size: 0.84rem;
+  color: var(--text-light);
+  line-height: 1.75;
+}
+
+/* ── Inline (nav, labels, buttons) ── */
+.bil-inline {
+  display: inline;
+}
+
+.bil-inline .bil-fr {
+  font-family: inherit; /* inherits parent (nav uses Montserrat) */
+}
+
+.bil-inline .bil-en {
+  font-family: inherit;
+  color: inherit;
+  opacity: 0.75;
+}
+
+.bil-sep {
+  color: var(--blush-deep);
+  opacity: 0.55;
+  margin: 0 3px;
+  font-family: var(--font-body);
+}
