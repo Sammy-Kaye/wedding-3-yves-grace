@@ -1,4 +1,3 @@
-import { BilPara } from './BilingualText.jsx';
 import './Hero.css';
 
 export default function Hero() {
@@ -12,33 +11,33 @@ export default function Hero() {
       <div className="hero__overlay" />
 
       <div className="hero__content fade-in">
-        {/* Couple photo — replace src once supplied by the couple */}
+        {/* Names — big, at the top */}
+        <h1 className="hero__names">Yves &amp; Grace</h1>
+
+        {/* Couple photo — drop file into public/images/couple.jpg to activate */}
         <div className="hero__photo-wrap">
           <div className="hero__photo-placeholder">
-            <span>Yves &amp; Grace</span>
+            <span className="hero__photo-placeholder-icon">💍</span>
             <small>Photo à venir / Photo coming soon</small>
           </div>
         </div>
 
-        {/* Pre-heading — French first */}
-        <div className="hero__pre-wrap">
-          <p className="hero__pre hero__pre--fr">
-            Les familles Nkolo et Ntumba
-          </p>
-          <p className="hero__pre hero__pre--en">
-            The families of Nkolo and Ntumba
-          </p>
-        </div>
-
-        <h1 className="hero__names">Yves &amp; Grace</h1>
-
-        {/* Tagline — bilingual stacked */}
+        {/* Invitation text — French first, both always visible */}
         <div className="hero__tagline-wrap">
           <p className="hero__tagline hero__tagline--fr">
-            ont l'honneur de vous inviter à venir célébrer leur mariage
+            Avec une immense joie et beaucoup d'amour, les familles Nkolo et Ntumba ont l'honneur
+            de vous inviter à célébrer l'union de leur fils bien-aimé, Yves Nkolo, et de leur fille, Grace Ntumba.
           </p>
           <p className="hero__tagline hero__tagline--en">
-            would be honoured by your presence as they celebrate their marriage
+            With immense joy and love, the families of Nkolo and Ntumba invite you to witness and celebrate
+            the wedding of their beloved son, Yves Nkolo, and daughter, Grace Ntumba.
+          </p>
+
+          <p className="hero__tagline hero__tagline--fr hero__tagline--second">
+            Venez partager avec nous cette merveilleuse célébration remplie d'amour, de bonheur et de précieux souvenirs.
+          </p>
+          <p className="hero__tagline hero__tagline--en">
+            Join us as we celebrate this beautiful union and share in a day filled with love, happiness, and cherished memories.
           </p>
         </div>
 

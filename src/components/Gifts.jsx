@@ -17,12 +17,10 @@ export default function Gifts() {
             </div>
             <div className="gifts__body">
               <p className="gifts__body--fr">
-                Si vous souhaitez nous offrir un cadeau en espèces, des enveloppes
-                seront disponibles au lieu de la réception le jour J.
+                Nous apprécierions sincèrement les enveloppes comme forme de cadeau privilégiée.
               </p>
               <p className="gifts__body--en">
-                If you would like to bless us with a cash gift, envelopes will be
-                available at the reception venue on the day.
+                We would sincerely appreciate envelopes as our preferred form of gifts.
               </p>
             </div>
           </div>
@@ -36,35 +34,36 @@ export default function Gifts() {
             </div>
             <div className="gifts__body">
               <p className="gifts__body--fr">
-                Vous pouvez également nous faire parvenir un cadeau directement
-                sur notre compte :
+                Pour ceux qui souhaiteraient nous faire parvenir leurs présents par virement bancaire,
+                nous avons mis nos coordonnées bancaires ci-dessous à votre disposition.
               </p>
               <p className="gifts__body--en">
-                You are also welcome to transfer a gift directly to our account:
+                For those who may wish to send us their gifts through a bank transfer, we have kindly
+                provided our bank details below for your convenience.
               </p>
             </div>
 
-            {/* Banking details — swap placeholder values once couple supplies them */}
-            <div className="gifts__bank-details gifts__bank-details--placeholder">
+            {/* Banking details — real account info */}
+            <div className="gifts__bank-details">
               <div className="gifts__bank-row">
                 <span className="gifts__bank-label">Titulaire / Account Holder</span>
-                <span className="gifts__bank-value gifts__placeholder-text">À confirmer / To be confirmed</span>
+                <span className="gifts__bank-value">Yves Nkolo</span>
               </div>
               <div className="gifts__bank-row">
                 <span className="gifts__bank-label">Banque / Bank</span>
-                <span className="gifts__bank-value gifts__placeholder-text">À confirmer / To be confirmed</span>
-              </div>
-              <div className="gifts__bank-row">
-                <span className="gifts__bank-label">Numéro / Account No.</span>
-                <span className="gifts__bank-value gifts__placeholder-text">À confirmer / To be confirmed</span>
-              </div>
-              <div className="gifts__bank-row">
-                <span className="gifts__bank-label">Code guichet / Branch Code</span>
-                <span className="gifts__bank-value gifts__placeholder-text">À confirmer / To be confirmed</span>
+                <span className="gifts__bank-value">FNB — First National Bank</span>
               </div>
               <div className="gifts__bank-row">
                 <span className="gifts__bank-label">Type de compte / Account Type</span>
-                <span className="gifts__bank-value gifts__placeholder-text">À confirmer / To be confirmed</span>
+                <span className="gifts__bank-value">Savings Account</span>
+              </div>
+              <div className="gifts__bank-row">
+                <span className="gifts__bank-label">Numéro / Account No.</span>
+                <span className="gifts__bank-value">63125399443</span>
+              </div>
+              <div className="gifts__bank-row">
+                <span className="gifts__bank-label">Code guichet / Branch Code</span>
+                <span className="gifts__bank-value">250655</span>
               </div>
               <div className="gifts__bank-row">
                 <span className="gifts__bank-label">Référence / Reference</span>

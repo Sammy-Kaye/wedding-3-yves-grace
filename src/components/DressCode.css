@@ -36,7 +36,7 @@
 
 .dresscode__message--en {
   font-family: var(--font-body);
-  font-size: 0.84rem;
+  font-size: 0.93rem;
   color: var(--text-light);
   text-align: center;
 }
@@ -51,7 +51,7 @@
 
 .dresscode__detail--en {
   font-family: var(--font-body);
-  font-size: 0.78rem;
+  font-size: 0.88rem;
   color: var(--text-light);
   letter-spacing: 0.5px;
   text-align: center;

@@ -2,9 +2,9 @@ import { BilSectionTitle, BilPara } from './BilingualText.jsx';
 import './Venues.css';
 
 const CHURCH_MAP_SRC =
-  'https://www.google.com/maps?q=39+Die+Villiers+Street,+Parow+Valley,+Cape+Town&output=embed';
+  'https://www.google.com/maps?q=39+De+Villiers+Street,+Parow+Valley,+Cape+Town&output=embed';
 const CHURCH_MAPS_LINK =
-  'https://maps.google.com/?q=39+Die+Villiers+Street,+Parow+Valley,+Cape+Town';
+  'https://maps.google.com/?q=39+De+Villiers+Street,+Parow+Valley,+Cape+Town';
 
 export default function Ceremony() {
   return (
@@ -21,7 +21,7 @@ export default function Ceremony() {
             <ul className="venue__info-list">
               <li>
                 <span className="venue__info-label">Adresse / Address</span>
-                <span>39 Die Villiers Street, Parow Valley, Cape Town</span>
+                <span>39 De Villiers Street, Parow Valley, Cape Town</span>
               </li>
               <li>
                 <span className="venue__info-label">Date</span>

@@ -38,10 +38,6 @@ export default function Reception() {
                 <span>Rhodes Drive, Newlands, Cape Town, 7735</span>
               </li>
               <li>
-                <span className="venue__info-label">Date</span>
-                <span>Samedi / Saturday, 03 Octobre / October 2026</span>
-              </li>
-              <li>
                 <span className="venue__info-label">Arrivée / Arrival</span>
                 <span>15h30 (3:30 PM)</span>
               </li>
@@ -62,8 +58,8 @@ export default function Reception() {
             <div className="venue__notice venue__notice--soft">
               <span className="venue__notice-icon">🚫</span>
               <BilPara
-                fr="Veuillez noter que cette réception est réservée aux adultes. Nous vous remercions de votre compréhension."
-                en="Kindly note that this is an adults-only reception. We appreciate your understanding."
+                fr="Veuillez noter qu'aucun enfant n'est autorisé à cette réception réservée aux adultes. Nous vous remercions de votre compréhension."
+                en="Kindly note that No Kids are allowed as this is an adults-only reception. We appreciate your understanding."
               />
             </div>
 

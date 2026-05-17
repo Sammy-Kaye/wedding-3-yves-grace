@@ -79,6 +79,14 @@ a:hover { color: var(--sage-deep); }
 
 .section {
   padding: var(--section-pad);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.section > .container {
+  width: 100%;
 }
 
 .section-alt {
