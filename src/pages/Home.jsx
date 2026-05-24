@@ -18,12 +18,12 @@ export default function Home() {
       <main>
         <Hero />
         <InviteeName />
+        <DressCode />
         <Ceremony />
         <Reception />
         <Countdown />
         <RSVP />
         <Gifts />
-        <DressCode />
       </main>
       <Footer />
     </>
