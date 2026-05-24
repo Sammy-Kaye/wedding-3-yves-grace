@@ -25,13 +25,13 @@
 .rsvp__instructions-title--fr {
   font-family: var(--font-heading);
   font-style: italic;
-  font-size: 1.3rem;
+  font-size: 1.6rem;
   color: var(--brown);
 }
 
 .rsvp__instructions-title--en {
   font-family: var(--font-body);
-  font-size: 0.84rem;
+  font-size: 1rem;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--text-light);
@@ -55,13 +55,13 @@
 .step-fr {
   font-family: var(--font-heading);
   font-style: italic;
-  font-size: 0.98rem;
+  font-size: 1.25rem;
   color: var(--charcoal);
 }
 
 .step-en {
   font-family: var(--font-body);
-  font-size: 0.87rem;
+  font-size: 1rem;
   color: var(--text-light);
 }
 
@@ -86,14 +86,14 @@
 
 .rsvp__deadline-date--fr {
   font-family: var(--font-heading);
-  font-size: 1.4rem;
+  font-size: 1.7rem;
   color: var(--brown);
   font-style: italic;
 }
 
 .rsvp__deadline-date--en {
   font-family: var(--font-body);
-  font-size: 0.9rem;
+  font-size: 1.05rem;
   color: var(--text-light);
 }
 
@@ -113,13 +113,13 @@
 .rsvp__form-title--fr {
   font-family: var(--font-heading);
   font-style: italic;
-  font-size: 1.3rem;
+  font-size: 1.6rem;
   color: var(--charcoal);
 }
 
 .rsvp__form-title--en {
   font-family: var(--font-body);
-  font-size: 0.82rem;
+  font-size: 1rem;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--text-light);
@@ -135,13 +135,13 @@
 .rsvp__sub--fr {
   font-family: var(--font-heading);
   font-style: italic;
-  font-size: 0.95rem;
+  font-size: 1.2rem;
   color: var(--text);
 }
 
 .rsvp__sub--en {
   font-family: var(--font-body);
-  font-size: 0.87rem;
+  font-size: 1rem;
   color: var(--text-light);
 }
 
@@ -234,26 +234,26 @@
 .rsvp__greeting--fr {
   font-family: var(--font-heading);
   font-style: italic;
-  font-size: 1.1rem;
+  font-size: 1.4rem;
   color: var(--charcoal);
 }
 
 .rsvp__greeting--en {
   font-family: var(--font-body);
-  font-size: 0.91rem;
+  font-size: 1.05rem;
   color: var(--text-light);
 }
 
 .rsvp__question--fr {
   font-family: var(--font-heading);
   font-style: italic;
-  font-size: 1rem;
+  font-size: 1.3rem;
   color: var(--charcoal);
 }
 
 .rsvp__question--en {
   font-family: var(--font-body);
-  font-size: 0.9rem;
+  font-size: 1.05rem;
   color: var(--text-light);
 }
 
