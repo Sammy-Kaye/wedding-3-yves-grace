@@ -14,12 +14,13 @@ export default function Hero() {
         {/* Names — big, at the top */}
         <h1 className="hero__names">Yves &amp; Grace</h1>
 
-        {/* Couple photo — drop file into public/images/couple.jpg to activate */}
+        {/* Couple photo */}
         <div className="hero__photo-wrap">
-          <div className="hero__photo-placeholder">
-            <span className="hero__photo-placeholder-icon">💍</span>
-            <small>Photo à venir / Photo coming soon</small>
-          </div>
+          <img
+            src="/images/couple.jpeg"
+            alt="Yves Nkolo & Grace Ntumba"
+            className="hero__photo"
+          />
         </div>
 
         {/* Invitation text — French first, both always visible */}
