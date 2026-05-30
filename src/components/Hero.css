@@ -1,40 +1,45 @@
 .hero {
   min-height: 100vh;
-  background: linear-gradient(160deg, var(--ivory) 0%, var(--cream) 50%, #ede8e0 100%);
+  background: linear-gradient(180deg, var(--ivory) 0%, var(--cream) 60%, #ede8e0 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   text-align: center;
-  padding: 100px 24px 60px;
   position: relative;
   overflow: hidden;
 }
 
-/* Subtle decorative rings */
-.hero::before,
-.hero::after {
-  content: '';
-  position: absolute;
-  border-radius: 50%;
-  border: 1px solid var(--blush);
-  opacity: 0.4;
-  pointer-events: none;
-}
-.hero::before {
-  width: 600px; height: 600px;
-  top: -200px; right: -200px;
-}
-.hero::after {
-  width: 400px; height: 400px;
-  bottom: -150px; left: -150px;
+/* ── Full-width photo banner — fades into cream below ── */
+.hero__photo-banner {
+  position: relative;
+  width: 100%;
+  height: 72vh;
+  min-height: 480px;
+  max-height: 820px;
+  overflow: hidden;
 }
 
-.hero__overlay {
+.hero__photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 28%;
+  display: block;
+}
+
+/* Vertical fade — image bleeds smoothly into the page background */
+.hero__photo-fade {
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at center, transparent 40%, rgba(250,247,242,0.3) 100%);
   pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    transparent 55%,
+    rgba(250, 247, 242, 0.35) 75%,
+    rgba(250, 247, 242, 0.85) 92%,
+    var(--cream) 100%
+  );
 }
 
 .hero__content {
@@ -43,49 +48,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
-}
-
-/* Photo */
-.hero__photo-wrap {
-  margin-bottom: 12px;
-}
-
-.hero__photo-placeholder {
-  width: 360px;
-  height: 460px;
-  border-radius: 20px;
-  background: linear-gradient(160deg, var(--blush) 0%, var(--blush-deep) 100%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  border: 3px solid var(--blush-deep);
-  color: var(--brown);
-  box-shadow: 0 12px 40px rgba(168, 112, 112, 0.2);
-}
-
-.hero__photo-placeholder-icon {
-  font-size: 2.5rem;
-}
-
-.hero__photo-placeholder small {
-  font-size: 0.62rem;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--white);
-  font-family: var(--font-body);
-  opacity: 0.85;
-}
-
-.hero__photo {
-  width: 360px;
-  height: 460px;
-  border-radius: 20px;
-  object-fit: cover;
-  border: 3px solid var(--blush-deep);
-  box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+  gap: 18px;
+  padding: 0 24px 64px;
+  margin-top: -90px; /* pull content up into the photo's fade */
 }
 
 /* Text */
@@ -119,12 +84,13 @@
 }
 
 .hero__names {
-  font-size: clamp(3rem, 8vw, 5.5rem);
+  font-size: clamp(3.4rem, 9vw, 6.5rem);
   font-style: italic;
   color: var(--charcoal);
-  letter-spacing: 2px;
+  letter-spacing: 3px;
   line-height: 1;
-  margin: 4px 0;
+  margin: 0 0 8px;
+  text-shadow: 0 2px 24px rgba(250, 247, 242, 0.6);
 }
 
 .hero__tagline-wrap {
@@ -211,13 +177,23 @@
   50%       { opacity: 1;   transform: scaleY(1.2); }
 }
 
+@media (max-width: 768px) {
+  .hero__photo-banner {
+    height: 58vh;
+    min-height: 380px;
+  }
+  .hero__content {
+    margin-top: -60px;
+    gap: 14px;
+  }
+}
+
 @media (max-width: 480px) {
   .hero__date-badge { flex-direction: column; gap: 4px; }
   .hero__dot { display: none; }
-  .hero__photo,
-  .hero__photo-placeholder {
-    width: min(320px, 90vw);
-    height: auto;
-    aspect-ratio: 3 / 4;
+  .hero__photo-banner {
+    height: 50vh;
+    min-height: 320px;
   }
+  .hero__content { margin-top: -50px; }
 }

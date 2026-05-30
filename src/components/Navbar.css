@@ -4,14 +4,15 @@
   left: 0;
   right: 0;
   z-index: 1000;
-  padding: 18px 0;
-  transition: all 0.35s ease;
+  padding: 22px 0;
+  transition: padding 0.35s ease, background 0.35s ease, box-shadow 0.35s ease;
 }
 
 .navbar--scrolled {
   background: rgba(250, 247, 242, 0.96);
-  backdrop-filter: blur(8px);
-  box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 2px 18px rgba(0, 0, 0, 0.06);
   padding: 12px 0;
 }
 
@@ -21,44 +22,107 @@
   justify-content: space-between;
 }
 
+/* ── Logo: italic monogram with hover flourish ── */
 .navbar__logo {
   font-family: var(--font-heading);
-  font-size: 1.6rem;
+  font-size: 1.7rem;
   font-style: italic;
   color: var(--charcoal);
   letter-spacing: 2px;
+  cursor: pointer;
+  transition: color 0.3s ease, letter-spacing 0.3s ease;
+  text-decoration: none;
 }
 
+.navbar__logo:hover {
+  color: var(--blush-dark);
+  letter-spacing: 4px;
+}
+
+.navbar__logo-amp {
+  font-style: italic;
+  color: var(--blush-deep);
+  margin: 0 2px;
+  transition: color 0.3s ease, transform 0.4s ease;
+  display: inline-block;
+}
+
+.navbar__logo:hover .navbar__logo-amp {
+  color: var(--sage-deep);
+  transform: rotate(-8deg) scale(1.15);
+}
+
+/* ── Links ── */
 .navbar__links {
   display: flex;
   align-items: center;
-  gap: 32px;
+  gap: 34px;
   list-style: none;
 }
 
 .navbar__links a {
+  position: relative;
   font-family: var(--font-body);
-  font-size: 0.72rem;
+  font-size: 0.76rem;
   font-weight: 500;
   letter-spacing: 1.8px;
   text-transform: uppercase;
   color: var(--charcoal);
-  transition: color 0.25s;
+  text-decoration: none;
+  padding: 6px 2px;
+  transition: color 0.3s ease, letter-spacing 0.3s ease;
+}
+
+/* Animated underline — grows from center on hover/active */
+.navbar__links a::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 0;
+  height: 1px;
+  background: var(--blush-deep);
+  transition: width 0.35s ease, left 0.35s ease, background 0.35s ease;
 }
 
 .navbar__links a:hover {
   color: var(--blush-dark);
+  letter-spacing: 2.6px;
 }
 
+.navbar__links a:hover::after {
+  width: 100%;
+  left: 0;
+}
+
+/* Active section: persistent underline + soft brown */
+.navbar__links a.is-active {
+  color: var(--brown);
+}
+
+.navbar__links a.is-active::after {
+  width: 100%;
+  left: 0;
+  background: var(--brown);
+  height: 1px;
+}
+
+/* Admin lock icon — even subtler */
 .navbar__admin-link {
-  opacity: 0.4;
-  font-size: 0.85rem !important;
-}
-.navbar__admin-link:hover {
-  opacity: 0.8;
+  opacity: 0.35;
+  font-size: 0.9rem !important;
+  letter-spacing: 0 !important;
+  padding: 0 !important;
 }
 
-/* Burger */
+.navbar__admin-link::after { display: none; }
+
+.navbar__admin-link:hover {
+  opacity: 0.85;
+  letter-spacing: 0 !important;
+}
+
+/* ── Burger ── */
 .navbar__burger {
   display: none;
   flex-direction: column;
@@ -82,7 +146,7 @@
 .navbar__burger--open span:nth-child(2) { opacity: 0; }
 .navbar__burger--open span:nth-child(3) { transform: rotate(-45deg) translate(4.5px, -4.5px); }
 
-/* Mobile */
+/* ── Mobile ── */
 @media (max-width: 768px) {
   .navbar__burger { display: flex; }
 
@@ -103,7 +167,9 @@
   }
 
   .navbar__links a {
-    font-size: 1rem;
+    font-size: 1.05rem;
     letter-spacing: 2.5px;
   }
+
+  .navbar__links a:hover { letter-spacing: 3.5px; }
 }

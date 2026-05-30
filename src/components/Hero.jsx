@@ -8,20 +8,19 @@ export default function Hero() {
 
   return (
     <header id="home" className="hero">
-      <div className="hero__overlay" />
+      {/* Full-width photo banner — fades into the page below */}
+      <div className="hero__photo-banner">
+        <img
+          src="/images/couple.jpeg"
+          alt="Yves Nkolo & Grace Ntumba"
+          className="hero__photo"
+        />
+        <div className="hero__photo-fade" aria-hidden="true" />
+      </div>
 
       <div className="hero__content fade-in">
-        {/* Names — big, at the top */}
+        {/* Names */}
         <h1 className="hero__names">Yves &amp; Grace</h1>
-
-        {/* Couple photo */}
-        <div className="hero__photo-wrap">
-          <img
-            src="/images/couple.jpeg"
-            alt="Yves Nkolo & Grace Ntumba"
-            className="hero__photo"
-          />
-        </div>
 
         {/* Invitation text — French first, both always visible */}
         <div className="hero__tagline-wrap">
