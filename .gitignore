@@ -11,6 +11,10 @@ dist-ssr
 .env.production
 *.local
 
+# Guest data — personal info, never commit
+guests.json
+*.xlsx
+
 # Logs
 logs
 *.log
