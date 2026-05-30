@@ -252,17 +252,37 @@
 }
 
 .admin-action-btn {
-  background: none;
-  border: none;
+  background: transparent;
+  border: 1px solid transparent;
   cursor: pointer;
-  padding: 6px 8px;
-  border-radius: 4px;
-  font-size: 1rem;
-  transition: background 0.15s;
+  padding: 7px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--brown);
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
 }
 
-.admin-action-btn:hover { background: var(--ivory); }
-.admin-action-btn--danger:hover { background: #fff3f3; }
+.admin-action-btn svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+.admin-action-btn:hover {
+  background: var(--ivory);
+  border-color: var(--blush);
+  color: var(--charcoal);
+  transform: translateY(-1px);
+}
+
+.admin-action-btn--danger { color: var(--blush-dark); }
+.admin-action-btn--danger:hover {
+  background: var(--blush);
+  border-color: var(--blush-dark);
+  color: var(--white);
+}
 
 /* Count */
 .admin-count {
