@@ -215,6 +215,19 @@ a:hover { color: var(--sage-deep); }
 /* --- Responsive --- */
 @media (max-width: 768px) {
   :root {
-    --section-pad: 56px 16px;
+    --section-pad: 64px 16px;
   }
+  .container { padding: 0 16px; }
+}
+
+/* Phones — scale the 20px base back so rem values don't inflate */
+@media (max-width: 600px) {
+  body { font-size: 17px; }
+  :root { --section-pad: 56px 14px; }
+  .container { padding: 0 14px; }
+}
+
+@media (max-width: 400px) {
+  body { font-size: 16px; }
+  :root { --section-pad: 48px 12px; }
 }

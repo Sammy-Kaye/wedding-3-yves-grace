@@ -373,3 +373,15 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Phones — let the option buttons stack full-width on tight screens */
+@media (max-width: 480px) {
+  .rsvp__options { flex-direction: column; gap: 10px; }
+  .rsvp__option {
+    flex: 1 1 100%;
+    min-width: 0;
+    width: 100%;
+  }
+  .rsvp__form { padding: 22px; }
+}
+
