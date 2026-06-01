@@ -10,6 +10,7 @@ import {
 import { db, auth, isFirebaseConfigured } from '../firebase/config.js';
 import { showNotification } from '../components/Notification.jsx';
 import NotificationRoot from '../components/Notification.jsx';
+import PdfGenerationModal from '../components/PdfGenerationModal.jsx';
 import './Admin.css';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -94,6 +95,9 @@ export default function Admin() {
   const [showAddModal,  setShowAddModal]  = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingGuest,  setEditingGuest]  = useState(null);
+
+  // PDF generation modal — either single (guest set) or bulk (guest null)
+  const [pdfModal, setPdfModal] = useState(null); // { mode: 'single'|'bulk', guest?: ... }
 
   // Form state
   const emptyForm = { name: '', email: '', partySize: 1, notes: '' };
@@ -511,6 +515,13 @@ export default function Admin() {
               <button className="btn btn-outline btn-sm" onClick={exportAttendingCSV} title="Catering / seating headcount">
                 Export Attending
               </button>
+              <button
+                className="btn btn-primary btn-sm"
+                onClick={() => setPdfModal({ mode: 'bulk' })}
+                title="Generate personalised PDF invitations for the guest list"
+              >
+                Generate Invitations
+              </button>
             </div>
           </div>
 
@@ -569,6 +580,20 @@ export default function Admin() {
                         </td>
                         <td>
                           <div className="admin-table__actions">
+                            <button
+                              className="admin-action-btn"
+                              title="Generate PDF invitation"
+                              aria-label="Generate invitation PDF"
+                              onClick={() => setPdfModal({ mode: 'single', guest: g })}
+                              disabled={!g.inviteCode}
+                            >
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                <polyline points="14 2 14 8 20 8" />
+                                <path d="M12 18v-6" />
+                                <polyline points="9 15 12 18 15 15" />
+                              </svg>
+                            </button>
                             <button
                               className="admin-action-btn"
                               title="Edit / Modifier"
@@ -631,6 +656,17 @@ export default function Admin() {
           <Modal title={`Edit — ${editingGuest?.name}`} onClose={() => setShowEditModal(false)}>
             <GuestForm onSubmit={handleEditGuest} submitLabel="Save Changes" />
           </Modal>
+        )}
+
+        {/* PDF Generation Modal — single or bulk */}
+        {pdfModal && (
+          <PdfGenerationModal
+            mode={pdfModal.mode}
+            guest={pdfModal.guest}
+            guests={filtered}
+            allGuests={guests}
+            onClose={() => setPdfModal(null)}
+          />
         )}
       </div>
     </>
