@@ -25,6 +25,32 @@ function generateSearchTerms(name) {
   return [...terms];
 }
 
+// 31-char alphabet — no I, L, O, 0, 1 (visually confusable in print)
+const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+const CODE_LENGTH   = 6;
+
+function makeCode() {
+  let s = '';
+  for (let i = 0; i < CODE_LENGTH; i++) {
+    s += CODE_ALPHABET[Math.floor(Math.random() * CODE_ALPHABET.length)];
+  }
+  return s;
+}
+
+/**
+ * Generate a code that doesn't collide with any code already used in the
+ * given list of guests. Retries up to 50 times before giving up.
+ */
+function generateUniqueCode(existingGuests) {
+  const used = new Set(existingGuests.map(g => g.inviteCode).filter(Boolean));
+  for (let i = 0; i < 50; i++) {
+    const code = makeCode();
+    if (!used.has(code)) return code;
+  }
+  // Statistically impossible with a 6-char/31-char alphabet, but throw if so
+  throw new Error('Could not find an unused invite code after 50 tries.');
+}
+
 // ── Sub-components ────────────────────────────────────────────────────────────
 
 function StatCard({ label, value, colour }) {
@@ -132,17 +158,19 @@ export default function Admin() {
     }
 
     try {
+      const inviteCode = generateUniqueCode(guests);
       await addDoc(collection(db, 'guests'), {
         name:        form.name.trim(),
         email:       form.email.trim() || null,
         partySize,
         notes:       form.notes.trim() || null,
         searchTerms: generateSearchTerms(form.name.trim()),
+        inviteCode,
         rsvp:        'pending',
         createdAt:   serverTimestamp(),
         lastUpdated: serverTimestamp(),
       });
-      showNotification(`${form.name.trim()} added successfully!`, 'success');
+      showNotification(`${form.name.trim()} added with code ${inviteCode}`, 'success', 6000);
       setForm(emptyForm);
       setShowAddModal(false);
       loadGuests();
@@ -215,41 +243,77 @@ export default function Admin() {
 
   // ── Export ──────────────────────────────────────────────────────────────────
 
-  const exportCSV = () => {
-    const attending = guests.filter(g => g.rsvp === 'attending');
-    if (!attending.length) return showNotification('No attending guests to export.', 'warning');
+  const escapeCsv = v => {
+    const s = String(v ?? '');
+    return s.includes(',') || s.includes('"') || s.includes('\n')
+      ? `"${s.replace(/"/g, '""')}"`
+      : s;
+  };
 
-    const escape = v => {
-      const s = String(v ?? '');
-      return s.includes(',') || s.includes('"') || s.includes('\n')
-        ? `"${s.replace(/"/g, '""')}"`
-        : s;
-    };
-
-    const rows = [
-      ['Name', 'Email', 'Party Size', 'Notes'],
-      ...attending.map(g => [g.name, g.email || '', g.partySize || 1, g.notes || '']),
-    ].map(r => r.map(escape).join(',')).join('\r\n');
-
-    const blob = new Blob([rows], { type: 'text/csv;charset=utf-8;' });
+  const downloadCsv = (rows, filename) => {
+    const csv  = rows.map(r => r.map(escapeCsv).join(',')).join('\r\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
     a.href     = url;
-    a.download = 'wedding-guests-attending.csv';
+    a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
-    showNotification('CSV exported!', 'success');
+  };
+
+  /** Full guest list with invite codes — for mail-merging into PDF invitations. */
+  const exportAllWithCodes = () => {
+    if (!guests.length) return showNotification('No guests to export.', 'warning');
+    const rows = [
+      ['Name', 'InviteCode', 'PartySize', 'Email', 'Status', 'Notes'],
+      ...guests.map(g => [
+        g.name,
+        g.inviteCode || '',
+        g.partySize || 1,
+        g.email || '',
+        g.rsvp || 'pending',
+        g.notes || '',
+      ]),
+    ];
+    downloadCsv(rows, 'wedding-guests-all.csv');
+    showNotification('Exported all guests with codes', 'success');
+  };
+
+  /** Attending guests only — for catering / seating headcount. */
+  const exportAttendingCSV = () => {
+    const attending = guests.filter(g => g.rsvp === 'attending');
+    if (!attending.length) return showNotification('No attending guests to export.', 'warning');
+    const rows = [
+      ['Name', 'Email', 'Party Size', 'Notes'],
+      ...attending.map(g => [g.name, g.email || '', g.partySize || 1, g.notes || '']),
+    ];
+    downloadCsv(rows, 'wedding-guests-attending.csv');
+    showNotification('Exported attending guests', 'success');
   };
 
   // ── Filtered guests list ────────────────────────────────────────────────────
 
   const filtered = guests.filter(g => {
+    const term = searchTerm.toLowerCase();
     const matchesSearch = !searchTerm ||
-      g.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (g.email || '').toLowerCase().includes(searchTerm.toLowerCase());
+      g.name.toLowerCase().includes(term) ||
+      (g.email || '').toLowerCase().includes(term) ||
+      (g.inviteCode || '').toLowerCase().includes(term);
     const matchesFilter = filterStatus === 'all' || g.rsvp === filterStatus;
     return matchesSearch && matchesFilter;
   });
+
+  // ── Copy code to clipboard ──────────────────────────────────────────────────
+
+  const copyCode = async (code) => {
+    if (!code) return;
+    try {
+      await navigator.clipboard.writeText(code);
+      showNotification(`Copied code ${code}`, 'success', 2000);
+    } catch {
+      showNotification('Could not copy. Please copy manually.', 'warning');
+    }
+  };
 
   // ── Stats ───────────────────────────────────────────────────────────────────
 
@@ -422,7 +486,7 @@ export default function Admin() {
               <input
                 className="admin-search"
                 type="text"
-                placeholder="Search guests…"
+                placeholder="Search by name, email, or code…"
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
               />
@@ -441,8 +505,11 @@ export default function Admin() {
               <button className="btn btn-primary btn-sm" onClick={() => { setForm(emptyForm); setShowAddModal(true); }}>
                 + Add Guest
               </button>
-              <button className="btn btn-sage btn-sm" onClick={exportCSV}>
-                Export CSV
+              <button className="btn btn-sage btn-sm" onClick={exportAllWithCodes} title="Mail-merge source: every guest with their invite code">
+                Export All
+              </button>
+              <button className="btn btn-outline btn-sm" onClick={exportAttendingCSV} title="Catering / seating headcount">
+                Export Attending
               </button>
             </div>
           </div>
@@ -456,6 +523,7 @@ export default function Admin() {
                 <thead>
                   <tr>
                     <th>Name</th>
+                    <th>Code</th>
                     <th>Email</th>
                     <th>Party</th>
                     <th>Status</th>
@@ -466,7 +534,7 @@ export default function Admin() {
                 <tbody>
                   {filtered.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="admin-table__empty">
+                      <td colSpan={7} className="admin-table__empty">
                         {guests.length === 0 ? 'No guests yet. Add your first guest.' : 'No guests match your search.'}
                       </td>
                     </tr>
@@ -474,6 +542,23 @@ export default function Admin() {
                     filtered.map(g => (
                       <tr key={g.id}>
                         <td className="admin-table__name">{g.name}</td>
+                        <td className="admin-table__code">
+                          {g.inviteCode ? (
+                            <button
+                              className="admin-code-chip"
+                              title="Click to copy"
+                              onClick={() => copyCode(g.inviteCode)}
+                            >
+                              <span className="admin-code-chip__text">{g.inviteCode}</span>
+                              <svg className="admin-code-chip__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                              </svg>
+                            </button>
+                          ) : (
+                            <span className="admin-code-missing">—</span>
+                          )}
+                        </td>
                         <td className="admin-table__email">{g.email || '—'}</td>
                         <td style={{ textAlign: 'center' }}>{g.partySize || 1}</td>
                         <td><StatusBadge status={g.rsvp} /></td>

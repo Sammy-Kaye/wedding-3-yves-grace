@@ -1,240 +1,202 @@
-import { useState, useRef, useCallback } from "react";
+import { useEffect, useState } from 'react';
 import {
   collection,
+  query,
+  where,
+  limit,
   getDocs,
   doc,
-  getDoc,
   updateDoc,
   serverTimestamp,
-} from "firebase/firestore";
-import { db, isFirebaseConfigured } from "../firebase/config.js";
-import { BilSectionTitle } from "./BilingualText.jsx";
-import { showNotification } from "./Notification.jsx";
-import "./RSVP.css";
+} from 'firebase/firestore';
+import { db, isFirebaseConfigured } from '../firebase/config.js';
+import { BilSectionTitle } from './BilingualText.jsx';
+import { showNotification } from './Notification.jsx';
+import './RSVP.css';
 
-const RSVP_DEADLINE_FR = "20 Septembre 2026";
-const RSVP_DEADLINE_EN = "20 September 2026";
+const RSVP_DEADLINE_FR = '20 Septembre 2026';
+const RSVP_DEADLINE_EN = '20 September 2026';
 
-function debounce(fn, delay) {
-  let timer;
-  return (...args) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => fn(...args), delay);
-  };
-}
-
+/**
+ * RSVP — code-based identity flow.
+ *
+ *  1. Guest receives a PDF invitation containing a 6-character code.
+ *  2. They type the code into the input below.
+ *  3. We query Firestore for a guest with that `inviteCode`. If found, a
+ *     modal opens showing their name and asking attending / declining.
+ *  4. Their selection updates the guest record. Success state appears.
+ *
+ * No name list is ever exposed — the only way to identify a guest is to
+ * already hold their personal code.
+ */
 export default function RSVP() {
-  const [query, setQuery] = useState("");
-  const [results, setResults] = useState([]);
-  const [showResults, setShowResults] = useState(false);
-  const [currentGuest, setCurrentGuest] = useState(null);
-  const [submitted, setSubmitted] = useState(false);
+  const [code, setCode]                 = useState('');
+  const [modalGuest, setModalGuest]     = useState(null);
+  const [loading, setLoading]           = useState(false);
+  const [submitted, setSubmitted]       = useState(false);
   const [submittedYes, setSubmittedYes] = useState(false);
-  const [loading, setLoading] = useState(false);
 
-  const allGuestsRef = useRef([]);
-  const loadedRef = useRef(false);
-
-  const ensureGuestsLoaded = async () => {
-    if (loadedRef.current) return;
-    const snap = await getDocs(collection(db, "guests"));
-    allGuestsRef.current = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-    loadedRef.current = true;
-  };
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const search = useCallback(
-    debounce(async (term) => {
-      if (term.length < 1) {
-        setResults([]);
-        setShowResults(false);
-        return;
-      }
-      await ensureGuestsLoaded();
-      const t = term.toLowerCase();
-      const matches = allGuestsRef.current
-        .filter((g) => {
-          const name = (g.name || "").toLowerCase();
-          const terms = Array.isArray(g.searchTerms)
-            ? g.searchTerms.join(" ").toLowerCase()
-            : (g.searchTerms || "").toLowerCase();
-          return name.includes(t) || terms.includes(t);
-        })
-        .slice(0, 8);
-      setResults(matches);
-      setShowResults(true);
-    }, 300),
-    [],
-  );
-
-  const handleInput = (e) => {
-    setQuery(e.target.value);
-    setCurrentGuest(null);
-    search(e.target.value.trim());
-  };
-
-  const selectGuest = async (guest) => {
+  // ── Lookup ────────────────────────────────────────────────────────────
+  const lookupCode = async (raw) => {
+    const trimmed = (raw || '').trim().toUpperCase();
+    if (!trimmed) return;
     setLoading(true);
     try {
-      const snap = await getDoc(doc(db, "guests", guest.id));
-      if (!snap.exists()) {
+      const q = query(
+        collection(db, 'guests'),
+        where('inviteCode', '==', trimmed),
+        limit(1),
+      );
+      const snap = await getDocs(q);
+      if (snap.empty) {
         showNotification(
-          "Invité introuvable. Veuillez contacter les mariés. / Guest not found.",
-          "error",
+          'Code introuvable. Vérifiez votre invitation. / Code not found. Please check your invitation.',
+          'error',
+          6000,
         );
         return;
       }
-      const fresh = { id: snap.id, ...snap.data() };
-      setQuery(fresh.name);
-      setShowResults(false);
-      setResults([]);
+      const docSnap = snap.docs[0];
+      const guest   = { id: docSnap.id, ...docSnap.data() };
 
-      if (fresh.rsvp !== "pending") {
+      if (guest.rsvp && guest.rsvp !== 'pending') {
         showNotification(
-          `${fresh.name} a déjà confirmé sa présence. / has already submitted an RSVP.`,
-          "warning",
-          7000,
+          `Vous avez déjà répondu (${guest.name}). Contactez les mariés pour modifier. / You've already responded — contact the couple to change your response.`,
+          'warning',
+          8000,
         );
         return;
       }
-      setCurrentGuest(fresh);
-    } catch {
+
+      setModalGuest(guest);
+    } catch (err) {
+      console.error(err);
       showNotification(
-        "Erreur de chargement. Veuillez réessayer. / Could not load guest.",
-        "error",
+        'Erreur réseau. Veuillez réessayer. / Network error. Please try again.',
+        'error',
       );
     } finally {
       setLoading(false);
     }
   };
 
+  // ── Submit ────────────────────────────────────────────────────────────
   const submitRSVP = async (attending) => {
-    if (!currentGuest) return;
+    if (!modalGuest) return;
     setLoading(true);
     try {
-      await updateDoc(doc(db, "guests", currentGuest.id), {
-        rsvp: attending ? "attending" : "not_attending",
+      await updateDoc(doc(db, 'guests', modalGuest.id), {
+        rsvp:        attending ? 'attending' : 'not_attending',
         lastUpdated: serverTimestamp(),
       });
       setSubmittedYes(attending);
       setSubmitted(true);
-      setCurrentGuest(null);
-      setQuery("");
-    } catch {
+      setModalGuest(null);
+      setCode('');
+    } catch (err) {
+      console.error(err);
       showNotification(
-        "Échec de la soumission. Veuillez réessayer. / Failed to submit RSVP.",
-        "error",
+        'Échec de la soumission. Veuillez réessayer. / Failed to submit RSVP.',
+        'error',
       );
     } finally {
       setLoading(false);
     }
   };
 
-  // ── No Firebase: mock preview (shows real UI with a demo guest) ───────────
+  // ── Modal close (ESC + body scroll lock) ──────────────────────────────
+  useEffect(() => {
+    if (!modalGuest) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = e => { if (e.key === 'Escape') setModalGuest(null); };
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [modalGuest]);
+
+  const onSubmit = (e) => {
+    e.preventDefault();
+    lookupCode(code);
+  };
+
+  // ── Common instructions panel — used in both live + preview ───────────
+  const InstructionsPanel = () => (
+    <div className="rsvp__instructions">
+      <div className="rsvp__instructions-title">
+        <p className="rsvp__instructions-title--fr">
+          Comment confirmer votre présence
+        </p>
+        <p className="rsvp__instructions-title--en">How to RSVP</p>
+      </div>
+      <ol className="rsvp__steps">
+        <li>
+          <span className="step-fr">
+            Trouvez votre code unique sur votre invitation.
+          </span>
+          <span className="step-en">
+            Find your unique code on your invitation.
+          </span>
+        </li>
+        <li>
+          <span className="step-fr">
+            Saisissez le code dans le champ ci-contre.
+          </span>
+          <span className="step-en">
+            Enter the code in the field opposite.
+          </span>
+        </li>
+        <li>
+          <span className="step-fr">
+            Confirmez votre présence ou votre absence.
+          </span>
+          <span className="step-en">
+            Confirm whether you will be attending.
+          </span>
+        </li>
+      </ol>
+      <div className="rsvp__deadline">
+        <span className="rsvp__deadline-label">Date limite / RSVP Deadline</span>
+        <span className="rsvp__deadline-date--fr">{RSVP_DEADLINE_FR}</span>
+        <span className="rsvp__deadline-date--en">{RSVP_DEADLINE_EN}</span>
+      </div>
+    </div>
+  );
+
+  // ── No Firebase: mock preview ─────────────────────────────────────────
   if (!isFirebaseConfigured) {
     return (
       <section id="rsvp" className="rsvp section">
         <div className="container">
           <BilSectionTitle fr="Confirmation de Présence" en="RSVP" />
           <div className="rsvp__wrap">
-            {/* Instructions — identical to live */}
-            <div className="rsvp__instructions">
-              <div className="rsvp__instructions-title">
-                <p className="rsvp__instructions-title--fr">
-                  Comment confirmer votre présence
-                </p>
-                <p className="rsvp__instructions-title--en">How to RSVP</p>
-              </div>
-              <ol className="rsvp__steps">
-                <li>
-                  <span className="step-fr">
-                    Recherchez votre nom tel qu'il figure sur votre invitation.
-                  </span>
-                  <span className="step-en">
-                    Search for your name exactly as written on your invitation.
-                  </span>
-                </li>
-                <li>
-                  <span className="step-fr">
-                    Sélectionnez votre nom dans la liste.
-                  </span>
-                  <span className="step-en">
-                    Select your name from the list.
-                  </span>
-                </li>
-                <li>
-                  <span className="step-fr">
-                    Confirmez votre présence ou votre absence.
-                  </span>
-                  <span className="step-en">
-                    Confirm whether you will be attending.
-                  </span>
-                </li>
-              </ol>
-              <div className="rsvp__deadline">
-                <span className="rsvp__deadline-label">
-                  Date limite / RSVP Deadline
-                </span>
-                <span className="rsvp__deadline-date--fr">
-                  {RSVP_DEADLINE_FR}
-                </span>
-                <span className="rsvp__deadline-date--en">
-                  {RSVP_DEADLINE_EN}
-                </span>
-              </div>
-            </div>
-
-            {/* Mock form — pre-filled with demo guest */}
+            <InstructionsPanel />
             <div className="rsvp__form card">
               <div className="rsvp__form-title">
-                <p className="rsvp__form-title--fr">Trouvez votre invitation</p>
-                <p className="rsvp__form-title--en">Find Your Invitation</p>
+                <p className="rsvp__form-title--fr">Votre code d'invitation</p>
+                <p className="rsvp__form-title--en">Your Invitation Code</p>
               </div>
               <div className="rsvp__sub-wrap">
                 <p className="rsvp__sub rsvp__sub--fr">
-                  Entrez votre nom tel qu'il figure sur votre invitation.
+                  Saisissez le code à six caractères figurant sur votre invitation.
                 </p>
                 <p className="rsvp__sub rsvp__sub--en">
-                  Enter your name exactly as it appears on your invitation.
+                  Enter the six-character code printed on your invitation.
                 </p>
               </div>
-
-              <div className="rsvp__search-wrap">
+              <div className="rsvp__code-wrap">
                 <input
-                  className="rsvp__input"
+                  className="rsvp__input rsvp__input--code"
                   type="text"
-                  placeholder="Rechercher votre nom… / Search your name…"
-                  defaultValue="Sam Kaye"
+                  placeholder="K7M2X9"
+                  defaultValue="K7M2X9"
                   readOnly
                 />
-              </div>
-
-              {/* Static mock guest confirmation panel */}
-              <div className="rsvp__guest-confirm">
-                <div className="rsvp__greeting-wrap">
-                  <p className="rsvp__greeting rsvp__greeting--fr">
-                    Bonjour, <strong>Sam Kaye</strong> !
-                  </p>
-                  <p className="rsvp__greeting rsvp__greeting--en">
-                    Hello, <strong>Sam Kaye</strong>!
-                  </p>
-                </div>
-                <div className="rsvp__question-wrap">
-                  <p className="rsvp__question rsvp__question--fr">
-                    Serez-vous présent(e) le 03 octobre 2026 ?
-                  </p>
-                  <p className="rsvp__question rsvp__question--en">
-                    Will you be joining us on 03 October 2026?
-                  </p>
-                </div>
-                <div className="rsvp__options">
-                  <button className="btn btn-primary rsvp__option">
-                    ✓ Je serai présent(e) ! / I'll be there!
-                  </button>
-                  <button className="btn btn-outline rsvp__option">
-                    ✕ Je décline avec regret / Regretfully decline
-                  </button>
-                </div>
+                <button className="btn btn-primary rsvp__submit">
+                  Confirmer / Continue
+                </button>
               </div>
             </div>
           </div>
@@ -243,156 +205,54 @@ export default function RSVP() {
     );
   }
 
-  // ── Full RSVP form ────────────────────────────────────────────────────────
+  // ── Live RSVP form ────────────────────────────────────────────────────
   return (
     <section id="rsvp" className="rsvp section">
       <div className="container">
         <BilSectionTitle fr="Confirmation de Présence" en="RSVP" />
 
         <div className="rsvp__wrap">
-          {/* Instructions */}
-          <div className="rsvp__instructions">
-            <div className="rsvp__instructions-title">
-              <p className="rsvp__instructions-title--fr">
-                Comment confirmer votre présence
-              </p>
-              <p className="rsvp__instructions-title--en">How to RSVP</p>
-            </div>
-            <ol className="rsvp__steps">
-              <li>
-                <span className="step-fr">
-                  Recherchez votre nom tel qu'il figure sur votre invitation.
-                </span>
-                <span className="step-en">
-                  Search for your name exactly as written on your invitation.
-                </span>
-              </li>
-              <li>
-                <span className="step-fr">
-                  Sélectionnez votre nom dans la liste.
-                </span>
-                <span className="step-en">Select your name from the list.</span>
-              </li>
-              <li>
-                <span className="step-fr">
-                  Confirmez votre présence ou votre absence.
-                </span>
-                <span className="step-en">
-                  Confirm whether you will be attending.
-                </span>
-              </li>
-            </ol>
-            <div className="rsvp__deadline">
-              <span className="rsvp__deadline-label">
-                Date limite / RSVP Deadline
-              </span>
-              <span className="rsvp__deadline-date--fr">
-                {RSVP_DEADLINE_FR}
-              </span>
-              <span className="rsvp__deadline-date--en">
-                {RSVP_DEADLINE_EN}
-              </span>
-            </div>
-          </div>
+          <InstructionsPanel />
 
-          {/* Form */}
           <div className="rsvp__form card">
             {!submitted ? (
               <>
                 <div className="rsvp__form-title">
-                  <p className="rsvp__form-title--fr">
-                    Trouvez votre invitation
-                  </p>
-                  <p className="rsvp__form-title--en">Find Your Invitation</p>
+                  <p className="rsvp__form-title--fr">Votre code d'invitation</p>
+                  <p className="rsvp__form-title--en">Your Invitation Code</p>
                 </div>
                 <div className="rsvp__sub-wrap">
                   <p className="rsvp__sub rsvp__sub--fr">
-                    Entrez votre nom tel qu'il figure sur votre invitation.
+                    Saisissez le code à six caractères figurant sur votre invitation.
                   </p>
                   <p className="rsvp__sub rsvp__sub--en">
-                    Enter your name exactly as it appears on your invitation.
+                    Enter the six-character code printed on your invitation.
                   </p>
                 </div>
 
-                <div className="rsvp__search-wrap">
+                <form className="rsvp__code-wrap" onSubmit={onSubmit}>
                   <input
-                    className="rsvp__input"
+                    className="rsvp__input rsvp__input--code"
                     type="text"
-                    placeholder="Rechercher votre nom… / Search your name…"
-                    value={query}
-                    onChange={handleInput}
+                    inputMode="text"
                     autoComplete="off"
+                    autoCapitalize="characters"
+                    spellCheck="false"
+                    maxLength={8}
+                    placeholder="K7M2X9"
+                    value={code}
+                    onChange={e => setCode(e.target.value.toUpperCase())}
                     disabled={loading}
+                    aria-label="Invitation code"
                   />
-                  {showResults && (
-                    <ul className="rsvp__results">
-                      {results.length === 0 ? (
-                        <li className="rsvp__no-result">
-                          <span className="step-fr">
-                            Aucun résultat. Vérifiez l'orthographe ou contactez
-                            les mariés.
-                          </span>
-                          <span className="step-en">
-                            No match found. Check spelling or contact the
-                            couple.
-                          </span>
-                        </li>
-                      ) : (
-                        results.map((g) => (
-                          <li
-                            key={g.id}
-                            className="rsvp__result-item"
-                            onClick={() => selectGuest(g)}
-                          >
-                            {g.name}
-                            {g.partySize > 1 && (
-                              <span className="rsvp__party-size">
-                                Groupe de / Party of {g.partySize}
-                              </span>
-                            )}
-                          </li>
-                        ))
-                      )}
-                    </ul>
-                  )}
-                </div>
-
-                {currentGuest && (
-                  <div className="rsvp__guest-confirm">
-                    <div className="rsvp__greeting-wrap">
-                      <p className="rsvp__greeting rsvp__greeting--fr">
-                        Bonjour, <strong>{currentGuest.name}</strong> !
-                      </p>
-                      <p className="rsvp__greeting rsvp__greeting--en">
-                        Hello, <strong>{currentGuest.name}</strong>!
-                      </p>
-                    </div>
-                    <div className="rsvp__question-wrap">
-                      <p className="rsvp__question rsvp__question--fr">
-                        Serez-vous présent(e) le 03 octobre 2026 ?
-                      </p>
-                      <p className="rsvp__question rsvp__question--en">
-                        Will you be joining us on 03 October 2026?
-                      </p>
-                    </div>
-                    <div className="rsvp__options">
-                      <button
-                        className="btn btn-primary rsvp__option"
-                        onClick={() => submitRSVP(true)}
-                        disabled={loading}
-                      >
-                        ✓ Je serai présent(e) ! / I'll be there!
-                      </button>
-                      <button
-                        className="btn btn-outline rsvp__option"
-                        onClick={() => submitRSVP(false)}
-                        disabled={loading}
-                      >
-                        ✕ Je décline avec regret / Regretfully decline
-                      </button>
-                    </div>
-                  </div>
-                )}
+                  <button
+                    type="submit"
+                    className="btn btn-primary rsvp__submit"
+                    disabled={loading || code.trim().length < 4}
+                  >
+                    {loading ? '…' : 'Confirmer / Continue'}
+                  </button>
+                </form>
               </>
             ) : (
               <div className="rsvp__success">
@@ -435,7 +295,7 @@ export default function RSVP() {
                 )}
                 <button
                   className="btn btn-outline rsvp__reset"
-                  onClick={() => setSubmitted(false)}
+                  onClick={() => { setSubmitted(false); setCode(''); }}
                 >
                   Nouvelle confirmation / Submit another RSVP
                 </button>
@@ -444,6 +304,80 @@ export default function RSVP() {
           </div>
         </div>
       </div>
+
+      {/* ── Confirmation modal ─────────────────────────────────────────── */}
+      {modalGuest && (
+        <div
+          className="rsvp-modal__overlay"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => !loading && setModalGuest(null)}
+        >
+          <div
+            className="rsvp-modal__panel"
+            onClick={e => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="rsvp-modal__close"
+              onClick={() => !loading && setModalGuest(null)}
+              aria-label="Close"
+            >
+              ×
+            </button>
+
+            <p className="rsvp-modal__eyebrow">
+              Code vérifié / Code verified
+            </p>
+
+            <div className="rsvp-modal__greeting">
+              <p className="rsvp-modal__greeting--fr">
+                Bonjour, <strong>{modalGuest.name}</strong>
+              </p>
+              <p className="rsvp-modal__greeting--en">
+                Hello, <strong>{modalGuest.name}</strong>
+              </p>
+            </div>
+
+            {modalGuest.partySize > 1 && (
+              <p className="rsvp-modal__party">
+                Groupe de {modalGuest.partySize} / Party of {modalGuest.partySize}
+              </p>
+            )}
+
+            <div className="rsvp-modal__question">
+              <p className="rsvp-modal__question--fr">
+                Serez-vous présent(e) le 03 octobre 2026 ?
+              </p>
+              <p className="rsvp-modal__question--en">
+                Will you be joining us on 03 October 2026?
+              </p>
+            </div>
+
+            <div className="rsvp-modal__options">
+              <button
+                className="btn btn-primary rsvp-modal__option"
+                onClick={() => submitRSVP(true)}
+                disabled={loading}
+              >
+                ✓ Je serai présent(e) / I'll be there
+              </button>
+              <button
+                className="btn btn-outline rsvp-modal__option"
+                onClick={() => submitRSVP(false)}
+                disabled={loading}
+              >
+                ✕ Je décline avec regret / Regretfully decline
+              </button>
+            </div>
+
+            <p className="rsvp-modal__hint">
+              Ce n'est pas vous ? Fermez et vérifiez votre code.<br />
+              Not you? Close and check your code.
+            </p>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

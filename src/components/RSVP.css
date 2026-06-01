@@ -385,3 +385,200 @@
   .rsvp__form { padding: 22px; }
 }
 
+/* ─────────────────────────────────────────────────────────────────────
+   Code input flow — replaces the old name search
+   ───────────────────────────────────────────────────────────────────── */
+.rsvp__code-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.rsvp__input--code {
+  text-align: center;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  font-size: 1.8rem;
+  letter-spacing: 0.4em;
+  padding: 18px 16px;
+  text-transform: uppercase;
+  color: var(--brown);
+  background: var(--ivory);
+}
+
+.rsvp__input--code::placeholder {
+  color: var(--blush-deep);
+  opacity: 0.55;
+  letter-spacing: 0.4em;
+}
+
+.rsvp__input--code:focus {
+  background: var(--white);
+  color: var(--charcoal);
+}
+
+.rsvp__submit {
+  align-self: stretch;
+}
+
+.rsvp__submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   Confirmation modal
+   ───────────────────────────────────────────────────────────────────── */
+.rsvp-modal__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  background: rgba(61, 53, 49, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: rsvpModalFade 0.25s ease;
+}
+
+@keyframes rsvpModalFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.rsvp-modal__panel {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  background: var(--cream);
+  border: 1px solid var(--blush);
+  border-radius: 12px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.25);
+  padding: 44px 36px 32px;
+  text-align: center;
+  animation: rsvpModalRise 0.32s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+@keyframes rsvpModalRise {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+
+.rsvp-modal__close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 1.6rem;
+  color: var(--text-light);
+  cursor: pointer;
+  padding: 4px 10px;
+  line-height: 1;
+  border-radius: 999px;
+  transition: color 0.2s, background 0.2s;
+}
+.rsvp-modal__close:hover {
+  color: var(--charcoal);
+  background: var(--ivory);
+}
+
+.rsvp-modal__eyebrow {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--sage-deep);
+  margin-bottom: 18px;
+}
+
+.rsvp-modal__greeting {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.rsvp-modal__greeting--fr {
+  font-family: var(--font-heading);
+  font-style: italic;
+  font-size: 1.7rem;
+  color: var(--charcoal);
+  line-height: 1.3;
+}
+
+.rsvp-modal__greeting--en {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  color: var(--text-light);
+}
+
+.rsvp-modal__party {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: var(--brown);
+  margin: 6px 0 18px;
+}
+
+.rsvp-modal__question {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 6px 0 24px;
+  padding-top: 18px;
+  border-top: 1px solid var(--blush);
+}
+
+.rsvp-modal__question--fr {
+  font-family: var(--font-heading);
+  font-style: italic;
+  font-size: 1.25rem;
+  color: var(--charcoal);
+}
+
+.rsvp-modal__question--en {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--text-light);
+}
+
+.rsvp-modal__options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.rsvp-modal__option {
+  width: 100%;
+  padding: 14px 20px;
+}
+
+.rsvp-modal__hint {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  letter-spacing: 0.5px;
+  color: var(--text-light);
+  line-height: 1.7;
+}
+
+/* Modal on small screens */
+@media (max-width: 480px) {
+  .rsvp-modal__panel {
+    padding: 38px 24px 28px;
+    border-radius: 10px;
+  }
+  .rsvp-modal__greeting--fr { font-size: 1.5rem; }
+  .rsvp-modal__question--fr { font-size: 1.15rem; }
+  .rsvp__input--code {
+    font-size: 1.5rem;
+    letter-spacing: 0.32em;
+    padding: 14px 12px;
+  }
+}
+
