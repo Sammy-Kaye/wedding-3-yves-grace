@@ -12,7 +12,7 @@
  * the image full-bleed, then draw the name + code in Cinzel on top.
  */
 
-import { PDFDocument, rgb } from 'pdf-lib';
+import { PDFDocument, PDFName, PDFString, rgb } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 
 const BACKGROUNDS = {
@@ -35,16 +35,26 @@ const TEXT_COLOR = rgb(0xaa / 255, 0x99 / 255, 0x8f / 255);
 const LAYOUT = {
   name: {
     centerX:  0.245,  // horizontal centre of the card
-    centerY:  0.495,  // vertical position of the name line
+    centerY:  0.630,  // vertical position of the name line
     fontSize: 0.032,  // as fraction of image height
     maxWidth: 0.40,   // shrink-to-fit if name exceeds this width
   },
   code: {
     centerX:  0.245,
-    centerY:  0.575,
+    centerY:  0.710,
     fontSize: 0.028,
     maxWidth: 0.40,
   },
+};
+
+/**
+ * Clickable hot-spot for the RSVP URL on the right-hand panel.
+ * Rect uses top-left-origin fractions of the page; flipped at draw time.
+ */
+const RSVP_LINK = {
+  url: 'https://yves-and-grace.netlify.app/',
+  x1: 0.515, y1: 0.138,
+  x2: 0.965, y2: 0.188,
 };
 
 /* ── Resource fetching with caching ─────────────────────────────────── */
@@ -99,9 +109,39 @@ async function buildOne(guest, lang) {
   page.drawImage(bgImage, { x: 0, y: 0, width: pageW, height: pageH });
 
   drawCentered(page, font, guest.name?.toUpperCase() || '', LAYOUT.name, pageW, pageH);
-  drawCentered(page, font, guest.inviteCode || '',         LAYOUT.code, pageW, pageH);
+  drawCentered(page, font, guest.inviteCode ? `Code: ${guest.inviteCode}` : '', LAYOUT.code, pageW, pageH);
+
+  addLinkAnnotation(pdfDoc, page, RSVP_LINK, pageW, pageH);
 
   return pdfDoc.save();
+}
+
+/**
+ * Overlays an invisible clickable rectangle on the page that opens `url`
+ * when clicked. PDF link annotations are vector overlays — they're how
+ * we make the URL printed in the background image actually clickable.
+ */
+function addLinkAnnotation(pdfDoc, page, spec, pageW, pageH) {
+  const x1 = spec.x1 * pageW;
+  const x2 = spec.x2 * pageW;
+  // Flip y from top-origin (our spec) to bottom-origin (PDF).
+  const y1 = pageH - spec.y2 * pageH;
+  const y2 = pageH - spec.y1 * pageH;
+
+  const link = pdfDoc.context.obj({
+    Type:    'Annot',
+    Subtype: 'Link',
+    Rect:    [x1, y1, x2, y2],
+    Border:  [0, 0, 2], // visible 2pt border while tuning — set width to 0 to hide
+    C:       [1, 0, 0], // red border (RGB 0–1) for visibility
+    A: {
+      Type: 'Action',
+      S:    'URI',
+      URI:  PDFString.of(spec.url),
+    },
+  });
+  const ref = pdfDoc.context.register(link);
+  page.node.set(PDFName.of('Annots'), pdfDoc.context.obj([ref]));
 }
 
 /**
