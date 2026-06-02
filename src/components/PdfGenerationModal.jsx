@@ -23,7 +23,7 @@ export default function PdfGenerationModal({
   allGuests,       // for bulk — the full list (for the "All" scope option)
   onClose,
 }) {
-  const [lang, setLang]                       = useState('fr');
+  const [lang, setLang]                       = useState('en');
   const [scope, setScope]                     = useState('filtered'); // bulk only
   const [templatesAvail, setTemplatesAvail]   = useState(null);       // null = checking
   const [busy, setBusy]                       = useState(false);
@@ -193,7 +193,7 @@ export default function PdfGenerationModal({
         {templatesAvail && !langAvail && (
           <div className="pdfgen-modal__warning">
             The {lang === 'fr' ? 'French' : 'English'} template hasn't been uploaded yet.
-            Drop <code>invitation-{lang}.pdf</code> into <code>public/templates/</code> in the repo,
+            Drop <code>invitation-bg-{lang}.png</code> into <code>public/templates/</code> in the repo,
             redeploy, and try again.
           </div>
         )}

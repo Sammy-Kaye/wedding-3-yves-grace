@@ -1,37 +1,56 @@
 /**
  * pdf-generator — produces personalised invitation PDFs from a blank
- * template + a guest record.
+ * background image + a guest record.
  *
  * Public API:
  *   generateOne(guest, lang)                  → triggers a single PDF download
  *   generateBulk(guests, lang, onProgress)    → triggers a ZIP download
+ *   checkTemplatesAvailable()                 → { fr, en } booleans
  *
- * All work runs client-side in the browser. Lazy-imported so pdf-lib /
- * fontkit weight never reaches the public site bundle.
- *
- * Coordinate logic relies on pdf-markers.js to find {{NAME}}/{{CODE}}
- * positions in the template. Fonts (CormorantGaramond) are bundled in
- * public/fonts/ and embedded so French accents + special chars render.
+ * Approach: the design lives as a flat PNG (everything baked in except
+ * the name + code). We build a fresh PDF page sized to the image, draw
+ * the image full-bleed, then draw the name + code in Cinzel on top.
  */
 
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import { PDFDocument, rgb } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
-import { locateMarkers } from './pdf-markers.js';
 
-const TEMPLATES = {
-  fr: '/templates/invitation-fr.pdf',
-  en: '/templates/invitation-en.pdf',
+const BACKGROUNDS = {
+  en: '/templates/invitation-bg-en.png',
+  fr: '/templates/invitation-bg-fr.png',
 };
 
-const FONTS = {
-  italic:  '/fonts/CormorantGaramond-Italic.ttf',
-  regular: '/fonts/CormorantGaramond-Regular.ttf',
+const FONT_URL = '/fonts/Cinzel-VariableFont_wght.ttf';
+
+// Brand colour from the design (#aa998f) in pdf-lib's 0–1 rgb space.
+const TEXT_COLOR = rgb(0xaa / 255, 0x99 / 255, 0x8f / 255);
+
+/**
+ * Layout constants — all expressed as fractions of the background image
+ * so the same numbers work regardless of export resolution.
+ *
+ * Origin: top-left, y grows downward (we flip to PDF coords at draw time).
+ * Tune these visually until name + code sit perfectly in the card.
+ */
+const LAYOUT = {
+  name: {
+    centerX:  0.245,  // horizontal centre of the card
+    centerY:  0.495,  // vertical position of the name line
+    fontSize: 0.032,  // as fraction of image height
+    maxWidth: 0.40,   // shrink-to-fit if name exceeds this width
+  },
+  code: {
+    centerX:  0.245,
+    centerY:  0.575,
+    fontSize: 0.028,
+    maxWidth: 0.40,
+  },
 };
 
 /* ── Resource fetching with caching ─────────────────────────────────── */
 
-const templateCache = new Map();
-const fontCache     = new Map();
+const bgCache   = new Map();
+const fontCache = new Map();
 
 async function fetchBytes(url, cache) {
   if (cache.has(url)) return cache.get(url);
@@ -42,17 +61,11 @@ async function fetchBytes(url, cache) {
   return buf;
 }
 
-/* ── Template availability check ────────────────────────────────────── */
+/* ── Background availability check ──────────────────────────────────── */
 
-/**
- * Returns { fr: boolean, en: boolean } indicating whether each template
- * file currently exists in /public. Used by the modal to show a clear
- * "templates not uploaded yet" state when the client hasn't dropped them
- * in yet.
- */
 export async function checkTemplatesAvailable() {
   const result = {};
-  for (const [lang, url] of Object.entries(TEMPLATES)) {
+  for (const [lang, url] of Object.entries(BACKGROUNDS)) {
     try {
       const res = await fetch(url, { method: 'HEAD' });
       result[lang] = res.ok;
@@ -66,68 +79,60 @@ export async function checkTemplatesAvailable() {
 /* ── Core: build one personalised PDF as Uint8Array ─────────────────── */
 
 async function buildOne(guest, lang) {
-  const templateUrl  = TEMPLATES[lang];
-  const templateBuf  = await fetchBytes(templateUrl, templateCache);
-  const markers      = await locateMarkers(templateUrl);
+  const bgUrl   = BACKGROUNDS[lang];
+  const bgBuf   = await fetchBytes(bgUrl, bgCache);
+  const fontBuf = await fetchBytes(FONT_URL, fontCache);
 
-  // Load the template fresh each time — pdf-lib mutates the document so
-  // we can't reuse a single PDFDocument across guests.
-  const pdfDoc = await PDFDocument.load(templateBuf);
+  const pdfDoc = await PDFDocument.create();
   pdfDoc.registerFontkit(fontkit);
 
-  // Embed Cormorant if available; fall back to Helvetica if a font is
-  // missing — we'd rather produce a working PDF than crash mid-batch.
-  let italicFont, regularFont;
-  try {
-    const italicBuf  = await fetchBytes(FONTS.italic, fontCache);
-    italicFont       = await pdfDoc.embedFont(italicBuf, { subset: true });
-  } catch {
-    italicFont = await pdfDoc.embedFont(StandardFonts.HelveticaOblique);
-  }
-  try {
-    const regularBuf = await fetchBytes(FONTS.regular, fontCache);
-    regularFont      = await pdfDoc.embedFont(regularBuf, { subset: true });
-  } catch {
-    regularFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
-  }
+  const bgImage = await pdfDoc.embedPng(bgBuf);
+  const font    = await pdfDoc.embedFont(fontBuf, { subset: true });
 
-  const page = pdfDoc.getPage(markers.name.pageIndex);
+  // Use the image's native dimensions as the page size (in PDF points).
+  // For a 300 DPI export this gives a physically large but proportional
+  // page; viewers scale to fit. Aspect ratio is preserved, no distortion.
+  const pageW = bgImage.width;
+  const pageH = bgImage.height;
+  const page  = pdfDoc.addPage([pageW, pageH]);
 
-  // For each marker: white-out the placeholder visible in the template,
-  // then draw the real value at the same baseline / size.
-  const overwrite = (marker, text, font) => {
-    // Tiny padding around the marker so we definitely cover the glyphs
-    const pad = Math.max(2, marker.fontSize * 0.15);
-    page.drawRectangle({
-      x:      marker.x - pad,
-      y:      marker.y - pad,
-      width:  marker.width  + pad * 2,
-      height: marker.height + pad * 2,
-      color:  rgb(1, 1, 1),
-    });
-    page.drawText(text, {
-      x:    marker.x,
-      y:    marker.y,
-      size: marker.fontSize,
-      font,
-      color: rgb(0.24, 0.21, 0.19), // matches site --charcoal in PDF gamma
-    });
-  };
+  page.drawImage(bgImage, { x: 0, y: 0, width: pageW, height: pageH });
 
-  overwrite(markers.name, guest.name,        italicFont);
-  overwrite(markers.code, guest.inviteCode,  regularFont);
+  drawCentered(page, font, guest.name?.toUpperCase() || '', LAYOUT.name, pageW, pageH);
+  drawCentered(page, font, guest.inviteCode || '',         LAYOUT.code, pageW, pageH);
 
   return pdfDoc.save();
 }
 
+/**
+ * Draws `text` horizontally centred on (centerX, centerY) using the
+ * fractional LAYOUT spec. Auto-shrinks if the text exceeds maxWidth.
+ */
+function drawCentered(page, font, text, spec, pageW, pageH) {
+  if (!text) return;
+  const maxWidthPx = spec.maxWidth * pageW;
+  let size = spec.fontSize * pageH;
+
+  // Shrink-to-fit loop — pdf-lib gives exact width at a given size.
+  let width = font.widthOfTextAtSize(text, size);
+  while (width > maxWidthPx && size > 4) {
+    size *= 0.95;
+    width = font.widthOfTextAtSize(text, size);
+  }
+
+  const cx = spec.centerX * pageW;
+  const cy = spec.centerY * pageH; // top-left origin
+  // pdf-lib's drawText origin is the baseline. Convert (cx, cy) where cy
+  // is the top-left-origin centre of the text into a PDF baseline.
+  const ascent  = font.heightAtSize(size, { descender: false });
+  const x = cx - width / 2;
+  const y = pageH - cy - ascent / 2;
+
+  page.drawText(text, { x, y, size, font, color: TEXT_COLOR });
+}
+
 /* ── Public: single guest ───────────────────────────────────────────── */
 
-/**
- * Generates and triggers a download of a single guest's invitation.
- *
- * @param {object} guest    Firestore guest record (must have `name`, `inviteCode`)
- * @param {'fr'|'en'} lang
- */
 export async function generateOne(guest, lang) {
   if (!guest?.inviteCode) throw new Error(`${guest?.name || 'Guest'} has no invite code yet.`);
   const bytes = await buildOne(guest, lang);
@@ -137,30 +142,21 @@ export async function generateOne(guest, lang) {
 
 /* ── Public: bulk ZIP ───────────────────────────────────────────────── */
 
-/**
- * Generates a ZIP archive of all given guests' invitations.
- *
- * @param {Array}  guests       List of guest records to generate for
- * @param {'fr'|'en'} lang
- * @param {Function?} onProgress Called as ({ current, total, name }) for each guest
- */
 export async function generateBulk(guests, lang, onProgress) {
   if (!guests?.length) throw new Error('No guests provided.');
 
-  // jszip is heavy — only pull it in when we actually need it
   const { default: JSZip } = await import('jszip');
   const zip = new JSZip();
 
   for (let i = 0; i < guests.length; i++) {
     const g = guests[i];
-    if (!g.inviteCode) continue; // skip guests with no code yet
+    if (!g.inviteCode) continue;
     onProgress?.({ current: i + 1, total: guests.length, name: g.name });
     try {
       const bytes = await buildOne(g, lang);
       zip.file(sanitiseFilename(`${g.inviteCode} - ${g.name}.pdf`), bytes);
     } catch (err) {
       console.error(`Failed to generate for ${g.name}:`, err);
-      // Keep going — one bad guest shouldn't sink the whole batch
     }
   }
 
@@ -172,7 +168,6 @@ export async function generateBulk(guests, lang, onProgress) {
 /* ── Helpers ────────────────────────────────────────────────────────── */
 
 function sanitiseFilename(name) {
-  // Strip characters that Windows / macOS reject in filenames
   return name.replace(/[<>:"/\\|?*\x00-\x1F]/g, '').trim();
 }
 
@@ -185,6 +180,5 @@ function triggerDownload(data, filename, mimeType) {
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-  // Defer revoke so the browser actually gets the click event
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
