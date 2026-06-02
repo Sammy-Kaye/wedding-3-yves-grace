@@ -26,11 +26,11 @@ export default function Hero() {
         <div className="hero__tagline-wrap">
           <p className="hero__tagline hero__tagline--fr">
             Avec une immense joie et beaucoup d'amour, les familles Nkolo et Ntumba ont l'honneur
-            de vous inviter à célébrer l'union de leur fils bien-aimé, Yves Nkolo, et de leur fille, Grace Ntumba.
+            de vous inviter à célébrer l'union de leur fils, Yves Nkolo, et de leur fille, Grace Ntumba.
           </p>
           <p className="hero__tagline hero__tagline--en">
             With immense joy and love, the families of Nkolo and Ntumba invite you to witness and celebrate
-            the wedding of their beloved son, Yves Nkolo, and daughter, Grace Ntumba.
+            the wedding of their son, Yves Nkolo, and daughter, Grace Ntumba.
           </p>
 
           <p className="hero__tagline hero__tagline--fr hero__tagline--second">
