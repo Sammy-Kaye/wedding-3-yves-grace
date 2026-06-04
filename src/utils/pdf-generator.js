@@ -35,17 +35,42 @@ const TEXT_COLOR = rgb(0xaa / 255, 0x99 / 255, 0x8f / 255);
 const LAYOUT = {
   name: {
     centerX:  0.245,  // horizontal centre of the card
-    centerY:  0.630,  // vertical position of the name line
-    fontSize: 0.032,  // as fraction of image height
+    centerY:  0.665,  // 0.680 - 0.015 (both up by 0.015)
+    fontSize: 0.027,  // as fraction of image height
     maxWidth: 0.40,   // shrink-to-fit if name exceeds this width
   },
   code: {
     centerX:  0.245,
-    centerY:  0.710,
-    fontSize: 0.028,
+    centerY:  0.725,  // 0.760 - 0.02 (code up first) - 0.015 (both up)
+    fontSize: 0.024,
     maxWidth: 0.40,
   },
 };
+
+/**
+ * Title translations applied to a guest's name when generating a French
+ * invitation. Guest records use English titles in Firestore ("Brother
+ * Jean", "Sister Marie", "Couple Bulongo"); for the FR PDF we swap to
+ * the French equivalent. "Couple" is identical in both languages so it
+ * doesn't appear in the map.
+ *
+ * Matching is case-insensitive at the start of the name only, so we
+ * don't accidentally rewrite a surname or middle name that contains the
+ * same letters. Capitalisation of the replacement matches the original.
+ */
+const FR_TITLE_MAP = {
+  brother: 'Frère',
+  sister:  'Sœur',
+};
+
+function translateTitle(name, lang) {
+  if (lang !== 'fr' || !name) return name;
+  const m = name.match(/^(\S+)(\s+.*)?$/);
+  if (!m) return name;
+  const [, first, rest = ''] = m;
+  const replacement = FR_TITLE_MAP[first.toLowerCase()];
+  return replacement ? replacement + rest : name;
+}
 
 /**
  * Clickable hot-spot for the RSVP URL on the right-hand panel.
@@ -53,8 +78,8 @@ const LAYOUT = {
  */
 const RSVP_LINK = {
   url: 'https://yves-and-grace.netlify.app/',
-  x1: 0.515, y1: 0.138,
-  x2: 0.965, y2: 0.188,
+  x1: 0.515, y1: 0.148,  // original 0.138 + 0.01
+  x2: 0.965, y2: 0.198,  // original 0.188 + 0.01
 };
 
 /* ── Resource fetching with caching ─────────────────────────────────── */
@@ -108,7 +133,8 @@ async function buildOne(guest, lang) {
 
   page.drawImage(bgImage, { x: 0, y: 0, width: pageW, height: pageH });
 
-  drawCentered(page, font, guest.name?.toUpperCase() || '', LAYOUT.name, pageW, pageH);
+  const displayName = translateTitle(guest.name || '', lang).toUpperCase();
+  drawCentered(page, font, displayName, LAYOUT.name, pageW, pageH);
   drawCentered(page, font, guest.inviteCode ? `Code: ${guest.inviteCode}` : '', LAYOUT.code, pageW, pageH);
 
   addLinkAnnotation(pdfDoc, page, RSVP_LINK, pageW, pageH);
