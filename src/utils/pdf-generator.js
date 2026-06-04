@@ -158,8 +158,7 @@ function addLinkAnnotation(pdfDoc, page, spec, pageW, pageH) {
     Type:    'Annot',
     Subtype: 'Link',
     Rect:    [x1, y1, x2, y2],
-    Border:  [0, 0, 2], // visible 2pt border while tuning — set width to 0 to hide
-    C:       [1, 0, 0], // red border (RGB 0–1) for visibility
+    Border:  [0, 0, 0], // invisible — link is still clickable, just no visible frame
     A: {
       Type: 'Action',
       S:    'URI',
