@@ -171,29 +171,58 @@ function addLinkAnnotation(pdfDoc, page, spec, pageW, pageH) {
 
 /**
  * Draws `text` horizontally centred on (centerX, centerY) using the
- * fractional LAYOUT spec. Auto-shrinks if the text exceeds maxWidth.
+ * fractional LAYOUT spec. Supports multi-line via explicit `\n` in the
+ * text or automatic word-wrapping when a line exceeds maxWidth.
+ * Font size is fixed at spec.fontSize * pageH; for multi-line text it
+ * reduces by 10% per extra line (floor 70%) so the block stays legible.
  */
 function drawCentered(page, font, text, spec, pageW, pageH) {
   if (!text) return;
   const maxWidthPx = spec.maxWidth * pageW;
   let size = spec.fontSize * pageH;
 
-  // Shrink-to-fit loop — pdf-lib gives exact width at a given size.
-  let width = font.widthOfTextAtSize(text, size);
-  while (width > maxWidthPx && size > 4) {
-    size *= 0.95;
-    width = font.widthOfTextAtSize(text, size);
+  // Build lines: honour explicit \n then word-wrap each segment.
+  const rawLines = text.split('\n');
+  const lines = [];
+  for (const raw of rawLines) {
+    const words = raw.split(' ');
+    let current = '';
+    for (const word of words) {
+      const candidate = current ? `${current} ${word}` : word;
+      if (current && font.widthOfTextAtSize(candidate, size) > maxWidthPx) {
+        lines.push(current);
+        current = word;
+      } else {
+        current = candidate;
+      }
+    }
+    if (current) lines.push(current);
   }
 
-  const cx = spec.centerX * pageW;
-  const cy = spec.centerY * pageH; // top-left origin
-  // pdf-lib's drawText origin is the baseline. Convert (cx, cy) where cy
-  // is the top-left-origin centre of the text into a PDF baseline.
-  const ascent  = font.heightAtSize(size, { descender: false });
-  const x = cx - width / 2;
-  const y = pageH - cy - ascent / 2;
+  // Reduce size for multi-line so the block doesn't overwhelm the card.
+  if (lines.length > 1) {
+    size *= Math.max(0.70, 1 - (lines.length - 1) * 0.10);
+  }
 
-  page.drawText(text, { x, y, size, font, color: TEXT_COLOR });
+  // Per-line shrink-to-fit as a last resort (very long single words etc.).
+  for (const line of lines) {
+    let w = font.widthOfTextAtSize(line, size);
+    while (w > maxWidthPx && size > 4) { size *= 0.95; w = font.widthOfTextAtSize(line, size); }
+  }
+
+  const ascent     = font.heightAtSize(size, { descender: false });
+  const lineHeight = ascent * 1.35;
+  const totalH     = lineHeight * lines.length;
+  const cx         = spec.centerX * pageW;
+  const blockTopY  = pageH - spec.centerY * pageH - totalH / 2; // PDF bottom-origin
+
+  lines.forEach((line, i) => {
+    const w = font.widthOfTextAtSize(line, size);
+    const x = cx - w / 2;
+    // Place each baseline so lines are evenly spaced within the block.
+    const y = blockTopY + (lines.length - 1 - i) * lineHeight;
+    page.drawText(line, { x, y, size, font, color: TEXT_COLOR });
+  });
 }
 
 /* ── Public: single guest ───────────────────────────────────────────── */
