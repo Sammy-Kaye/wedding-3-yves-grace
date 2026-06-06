@@ -17,6 +17,26 @@ export default function Footer() {
           </p>
         </div>
 
+        {/* Contact block — for guests who need help with their RSVP, code, etc. */}
+        <div className="footer__contact-wrap">
+          <p className="footer__contact-intro footer__contact-intro--fr">
+            Pour plus d'informations, veuillez contacter
+          </p>
+          <p className="footer__contact-intro footer__contact-intro--en">
+            For more information, please contact
+          </p>
+          <ul className="footer__contact-list">
+            <li>
+              <span className="footer__contact-name">Br Arthur</span>
+              <a className="footer__contact-phone" href="tel:+27795293393">+27 79 529 3393</a>
+            </li>
+            <li>
+              <span className="footer__contact-name">Br Joel</span>
+              <a className="footer__contact-phone" href="tel:+27823858565">+27 82 385 8565</a>
+            </li>
+          </ul>
+        </div>
+
         <p className="footer__copy">© 2026 Yves &amp; Grace. Tous droits réservés. / All rights reserved.</p>
       </div>
     </footer>

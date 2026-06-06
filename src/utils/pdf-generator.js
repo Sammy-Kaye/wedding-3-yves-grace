@@ -22,8 +22,8 @@ const BACKGROUNDS = {
 
 const FONT_URL = '/fonts/Cinzel-VariableFont_wght.ttf';
 
-// Brand colour from the design (#aa998f) in pdf-lib's 0–1 rgb space.
-const TEXT_COLOR = rgb(0xaa / 255, 0x99 / 255, 0x8f / 255);
+// Text colour for the name + code overlay (#231f1d — near-black charcoal).
+const TEXT_COLOR = rgb(0x23 / 255, 0x1f / 255, 0x1d / 255);
 
 /**
  * Layout constants — all expressed as fractions of the background image
